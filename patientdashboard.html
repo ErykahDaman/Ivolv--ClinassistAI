@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patient Dashboard | ClinAssist AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0b1120;
+      color: #e2e8f0;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.9rem 2rem;
+      background: rgba(13,24,45,0.9);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-brand { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #fff; text-decoration: none; }
+    .nav-brand span { color: #38bdf8; }
+    .nav-center { font-size: 0.82rem; color: rgba(241,245,249,0.4); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .nav-user { font-size: 0.82rem; color: rgba(241,245,249,0.5); }
+    .btn-nav {
+      padding: 0.42rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05); color: #e2e8f0; font-size: 0.8rem;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.18s;
+      text-decoration: none; display: inline-flex; align-items: center;
+    }
+    .btn-nav:hover { background: rgba(255,255,255,0.1); }
+
+    .info-banner {
+      background: rgba(29,78,216,0.1);
+      border-bottom: 1px solid rgba(56,189,248,0.1);
+      padding: 0.75rem 2rem;
+      font-size: 0.8rem; color: rgba(241,245,249,0.5);
+      display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;
+    }
+    .info-banner strong { color: #38bdf8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; }
+    .info-banner ul { list-style: none; display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 0; padding: 0; }
+    .info-banner li::before { content: '·'; margin-right: 0.4rem; color: #38bdf8; }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 1.25rem;
+      padding: 1.5rem 2rem;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: rgba(13,24,45,0.75);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 1.5rem;
+      backdrop-filter: blur(10px);
+    }
+    .card + .card { margin-top: 1.25rem; }
+    .card-title {
+      font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.1em; color: #38bdf8; margin-bottom: 1.1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .card-title svg { width: 15px; height: 15px; }
+
+    .mode-toggle { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .mode-btn {
+      padding: 0.45rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+      background: transparent; color: rgba(241,245,249,0.45); font-size: 0.82rem;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.18s;
+    }
+    .mode-btn.active { background: rgba(29,78,216,0.3); border-color: rgba(56,189,248,0.4); color: #fff; }
+
+    .dash-textarea {
+      width: 100%; min-height: 110px; resize: vertical;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 12px; color: #e2e8f0; font-size: 0.88rem;
+      font-family: 'DM Sans', sans-serif; padding: 0.85rem 1rem;
+      outline: none; transition: border-color 0.2s; line-height: 1.6;
+    }
+    .dash-textarea:focus { border-color: rgba(56,189,248,0.4); }
+    .dash-textarea::placeholder { color: rgba(241,245,249,0.2); }
+
+    .voice-status { font-size: 0.8rem; color: #38bdf8; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    .voice-dot { width: 7px; height: 7px; background: #38bdf8; border-radius: 50%; animation: blink 1.2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    .btn-primary {
+      padding: 0.72rem 1.4rem; border-radius: 10px;
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      border: 1px solid rgba(56,189,248,0.2); color: #fff;
+      font-size: 0.88rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .btn-primary:hover { background: linear-gradient(135deg, #2563eb, #1d4ed8); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(29,78,216,0.3); }
+    .btn-secondary {
+      padding: 0.62rem 1.1rem; border-radius: 10px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(241,245,249,0.7); font-size: 0.82rem; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.09); }
+
+    .actions { display: flex; gap: 0.65rem; margin-top: 1rem; flex-wrap: wrap; }
+
+    .output-box {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px; padding: 1rem; font-size: 0.85rem;
+      color: rgba(241,245,249,0.75); line-height: 1.7; margin-bottom: 0.9rem;
+    }
+    .output-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: rgba(241,245,249,0.35); margin-bottom: 0.4rem; }
+    .risk-box { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.9rem; }
+
+    .field-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(241,245,249,0.4); display: block; margin-bottom: 0.35rem; }
+    .dash-input, .dash-select {
+      width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; color: #e2e8f0; font-size: 0.85rem; font-family: 'DM Sans', sans-serif;
+      padding: 0.65rem 0.85rem; outline: none; transition: border-color 0.2s; margin-bottom: 0.85rem;
+      appearance: none;
+    }
+    .dash-input:focus, .dash-select:focus { border-color: rgba(56,189,248,0.4); }
+    .dash-select option { background: #0f172a; }
+
+    .appt-card   { padding: 1rem; border-radius: 12px; margin-bottom: 0.75rem; border: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.03); }
+    .appt-title  { font-size: 0.88rem; font-weight: 600; color: #f1f5f9; margin-bottom: 0.2rem; }
+    .appt-detail { font-size: 0.8rem; color: rgba(241,245,249,0.5); line-height: 1.6; }
+    .status-pill { display: inline-block; padding: 0.18rem 0.55rem; border-radius: 6px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .status-pending     { background: rgba(234,179,8,0.15);  color: #fde047; }
+    .status-approved    { background: rgba(34,197,94,0.15);  color: #86efac; }
+    .status-rescheduled { background: rgba(56,189,248,0.15); color: #7dd3fc; }
+    .status-declined    { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+
+    .rx-card   { padding: 1rem; border-radius: 12px; margin-bottom: 0.75rem; border: 1px solid rgba(56,189,248,0.15); background: rgba(56,189,248,0.04); }
+    .rx-med    { font-size: 0.95rem; font-weight: 600; color: #7dd3fc; margin-bottom: 0.25rem; }
+    .rx-detail { font-size: 0.8rem; color: rgba(241,245,249,0.55); line-height: 1.7; }
+    .rx-badge  { display: inline-block; padding: 0.18rem 0.55rem; border-radius: 6px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: rgba(34,197,94,0.15); color: #86efac; }
+
+    .mini-calendar { width: 100%; }
+    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.9rem; }
+    .cal-month  { font-size: 0.88rem; font-weight: 600; color: #f1f5f9; }
+    .cal-nav    { background: none; border: none; color: rgba(241,245,249,0.4); cursor: pointer; font-size: 1rem; padding: 0.2rem 0.4rem; border-radius: 6px; transition: color 0.18s; }
+    .cal-nav:hover { color: #38bdf8; }
+    .cal-grid   { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .cal-day-name { font-size: 0.65rem; font-weight: 600; text-align: center; color: rgba(241,245,249,0.3); text-transform: uppercase; letter-spacing: 0.06em; padding: 0.25rem 0; }
+    .cal-day    { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; color: rgba(241,245,249,0.5); border-radius: 6px; cursor: default; transition: background 0.15s; }
+    .cal-day.today    { background: rgba(29,78,216,0.35); color: #fff; font-weight: 600; }
+    .cal-day.has-appt { background: rgba(56,189,248,0.15); color: #7dd3fc; font-weight: 600; cursor: pointer; }
+    .cal-day.has-appt:hover { background: rgba(56,189,248,0.25); }
+    .cal-day.empty { visibility: hidden; }
+
+    .delivery-box {
+      margin-top: 0.85rem; padding: 0.85rem; border-radius: 10px;
+      background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.2);
+      font-size: 0.82rem; color: rgba(241,245,249,0.6); line-height: 1.7;
+    }
+
+    .section-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 1.25rem 0; }
+    .empty-state { text-align: center; padding: 1.5rem; color: rgba(241,245,249,0.25); font-size: 0.83rem; }
+    .scroll-panel { max-height: 300px; overflow-y: auto; padding-right: 2px; }
+    .scroll-panel::-webkit-scrollbar { width: 4px; }
+    .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 900px) {
+      .dashboard-grid { grid-template-columns: 1fr; padding: 1rem; }
+      nav { padding: 0.8rem 1rem; }
+      .info-banner { padding: 0.65rem 1rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">Clin<span>Assist</span> AI</a>
+  <span class="nav-center">Patient Dashboard</span>
+  <div class="nav-right">
+    <span class="nav-user" id="navPatientName">—</span>
+    <a href="profile-patient.html" class="btn-nav" title="Profile & Settings">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </a>
+    <a href="support-report.html" class="btn-nav" title="Support & Report">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
+    </a>
+    <button class="btn-nav" onclick="patientLogout()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="info-banner">
+  <strong>How It Works</strong>
+  <ul>
+    <li>Describe symptoms and generate a health summary</li>
+    <li>Send your summary directly to your doctor</li>
+    <li>Book appointments and track their status</li>
+    <li>View prescriptions sent by your doctor</li>
+  </ul>
+</div>
+
+<div class="dashboard-grid">
+
+  <!-- LEFT COLUMN -->
+  <div class="left-col">
+
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Describe Your Symptoms
+      </div>
+
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="patientTypeBtn"  onclick="setPatientMode('type')">📝 Type</button>
+        <button class="mode-btn"        id="patientVoiceBtn" onclick="setPatientMode('voice')">🎤 Voice</button>
+      </div>
+
+      <textarea class="dash-textarea" id="patientInput" placeholder="Example: I have had chest pain and shortness of breath for 2 days…"></textarea>
+
+      <div id="patientVoiceStatus" class="voice-status hidden">
+        <span class="voice-dot"></span> Listening…
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" onclick="analyzePatient()">Generate Summary</button>
+      </div>
+
+      <div id="patientOutput" class="hidden" style="margin-top:1.25rem;">
+        <div class="section-divider"></div>
+        <div class="output-label">Symptom Summary</div>
+        <div id="summary" class="output-box"></div>
+        <div class="output-label">Risk Level</div>
+        <div id="patientRisk" class="risk-box"></div>
+        <div class="actions">
+          <button class="btn-primary"   onclick="sendToDoctorFromPatient()">Send to Doctor</button>
+          <button class="btn-secondary" onclick="downloadPatientPDF()">⬇ Download PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Book Appointment
+      </div>
+      <label class="field-label">Preferred Date</label>
+      <input class="dash-input" type="date" id="appointmentDate"/>
+      <label class="field-label">Appointment Type</label>
+      <select class="dash-select" id="appointmentType">
+        <option value="Online Consultation">Online Consultation</option>
+        <option value="Physical Visit">Physical Visit</option>
+      </select>
+      <label class="field-label">Reason (optional)</label>
+      <textarea class="dash-textarea" id="appointmentReason" rows="2" placeholder="Brief reason for the visit…" style="min-height:70px; margin-bottom:0;"></textarea>
+      <div class="actions">
+        <button class="btn-primary" onclick="bookAppointment()">Request Appointment</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-8 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+        Pharmacy Request
+      </div>
+      <label class="field-label">Medication</label>
+      <select class="dash-select" id="medicationSelect">
+        <option value="Paracetamol">Paracetamol</option>
+        <option value="Ibuprofen">Ibuprofen</option>
+        <option value="Antibiotics">Antibiotics</option>
+        <option value="Cough Syrup">Cough Syrup</option>
+        <option value="Antihistamine">Antihistamine</option>
+        <option value="Antacid">Antacid</option>
+      </select>
+      <button class="btn-primary" onclick="requestMedication()">Request Delivery</button>
+      <div id="deliveryStatus" class="delivery-box hidden"></div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        My Calendar
+      </div>
+      <div class="mini-calendar" id="miniCalendar"></div>
+      <div id="calApptList" style="margin-top:0.9rem;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        My Appointments
+      </div>
+      <div class="scroll-panel" id="patientAppointments">
+        <div class="empty-state">No appointments yet</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+        My Prescriptions
+      </div>
+      <div class="scroll-panel" id="patientPrescriptions">
+        <div class="empty-state">No prescriptions yet</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- script.js FIRST — defines all shared functions including voice, login, risk engine -->
+<script src="script.js"></script>
+
+<!-- Dashboard-only functions that don't exist in script.js -->
+<script>
+  function analyzePatient() {
+    const input = document.getElementById("patientInput").value.trim();
+    if (!input) { alert("Please describe your symptoms."); return; }
+
+    const risk = detectRisk(input);
+
+    document.getElementById("summary").innerHTML =
+      `<strong>Patient Report:</strong><br><br>${input}<br><br>` +
+      `<strong>Preliminary Assessment:</strong><br>${risk.category.join(", ")}`;
+
+    const riskBox = document.getElementById("patientRisk");
+    riskBox.innerText = risk.level;
+    if      (risk.color === "red")    { riskBox.style.background = "#7f1d1d"; riskBox.style.color = "#fca5a5"; }
+    else if (risk.color === "orange") { riskBox.style.background = "#7c2d12"; riskBox.style.color = "#fdba74"; }
+    else                              { riskBox.style.background = "#14532d"; riskBox.style.color = "#86efac"; }
+
+    document.getElementById("patientOutput").classList.remove("hidden");
+  }
+
+  function sendToDoctorFromPatient() {
+    const input = document.getElementById("patientInput").value.trim();
+    if (!input) return;
+    const name = localStorage.getItem("patientUsername") || "Live Patient";
+    const submissions = JSON.parse(localStorage.getItem("submissions") || "[]");
+    submissions.push({ name, summary: input, date: new Date().toLocaleString() });
+    localStorage.setItem("submissions", JSON.stringify(submissions));
+    alert("Summary sent to your doctor successfully.");
+  }
+
+  function bookAppointment() {
+    const date   = document.getElementById("appointmentDate").value;
+    const type   = document.getElementById("appointmentType").value;
+    const reason = document.getElementById("appointmentReason").value.trim();
+    if (!date) { alert("Please select a date."); return; }
+    const name = localStorage.getItem("patientUsername") || "Live Patient";
+    const appointments = JSON.parse(localStorage.getItem("appointments") || "[]");
+    appointments.push({ name, date, type, reason, status: "Pending" });
+    localStorage.setItem("appointments", JSON.stringify(appointments));
+    alert("Appointment request sent to your doctor.");
+    loadPatientActivity();
+    renderCalendar();
+  }
+
+  function requestMedication() {
+    const med = document.getElementById("medicationSelect").value;
+    const box = document.getElementById("deliveryStatus");
+    box.innerHTML =
+      `<strong style="color:#86efac">Request Received</strong><br>` +
+      `Medication: ${med}<br>Status: Processing delivery<br>Estimated arrival: 24–48 hours`;
+    box.classList.remove("hidden");
+  }
+
+  function loadPatientActivity() {
+    const name = localStorage.getItem("patientUsername") || "john123";
+    const appointments  = JSON.parse(localStorage.getItem("appointments")  || "[]");
+    const prescriptions = JSON.parse(localStorage.getItem("prescriptions") || "[]");
+
+    const myAppts = appointments.filter(a =>
+      a.name === name || (a.name === "John Matthews" && name === "john123")
+    );
+
+    const apptEl = document.getElementById("patientAppointments");
+    apptEl.innerHTML = myAppts.length
+      ? myAppts.map(a => `
+          <div class="appt-card">
+            <div class="appt-title">${a.type}</div>
+            <div class="appt-detail">
+              Date: <strong style="color:#e2e8f0">${a.date}</strong><br>
+              ${a.reason ? `Reason: ${a.reason}<br>` : ""}
+              Status: <span class="status-pill status-${a.status.toLowerCase()}">${a.status}</span>
+            </div>
+          </div>`).join("")
+      : '<div class="empty-state">No appointments yet</div>';
+
+    const myRx = prescriptions.filter(p =>
+      p.patient === name || (p.patient === "John Matthews" && name === "john123")
+    );
+
+    const rxEl = document.getElementById("patientPrescriptions");
+    rxEl.innerHTML = myRx.length
+      ? [...myRx].reverse().map(p => `
+          <div class="rx-card">
+            <div class="rx-med">${p.medication}</div>
+            <div class="rx-detail">
+              Dosage: ${p.dosage}<br>
+              ${p.duration ? `Duration: ${p.duration}<br>` : ""}
+              ${p.refills > 0 ? `Refills: ${p.refills}<br>` : ""}
+              ${p.notes ? `Notes: ${p.notes}<br>` : ""}
+              Issued by: ${p.issuedBy}<br>
+              <span style="color:rgba(241,245,249,0.3); font-size:0.75rem">${p.date}</span>
+            </div>
+            <span class="rx-badge">${p.status}</span>
+          </div>`).join("")
+      : '<div class="empty-state">No prescriptions yet</div>';
+  }
+
+  /* Mini Calendar */
+  let calYear, calMonth;
+
+  function renderCalendar(year, month) {
+    const now = new Date();
+    if (year  === undefined) year  = now.getFullYear();
+    if (month === undefined) month = now.getMonth();
+    calYear = year; calMonth = month;
+
+    const name = localStorage.getItem("patientUsername") || "john123";
+    const appointments = JSON.parse(localStorage.getItem("appointments") || "[]");
+    const myAppts = appointments.filter(a =>
+      a.name === name || (a.name === "John Matthews" && name === "john123")
+    );
+
+    const apptDates = {};
+    myAppts.forEach(a => { apptDates[a.date] = apptDates[a.date] || []; apptDates[a.date].push(a); });
+
+    const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDay    = new Date(year, month, 1).getDay();
+    const todayStr    = now.toISOString().split("T")[0];
+
+    let html = `
+      <div class="cal-header">
+        <button class="cal-nav" onclick="renderCalendar(${month===0?year-1:year},${month===0?11:month-1})">‹</button>
+        <span class="cal-month">${monthNames[month]} ${year}</span>
+        <button class="cal-nav" onclick="renderCalendar(${month===11?year+1:year},${month===11?0:month+1})">›</button>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-day-name">Su</div><div class="cal-day-name">Mo</div>
+        <div class="cal-day-name">Tu</div><div class="cal-day-name">We</div>
+        <div class="cal-day-name">Th</div><div class="cal-day-name">Fr</div>
+        <div class="cal-day-name">Sa</div>`;
+
+    for (let i = 0; i < firstDay; i++) html += `<div class="cal-day empty"></div>`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const ds = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      let cls = "cal-day" + (ds === todayStr ? " today" : "") + (apptDates[ds] ? " has-appt" : "");
+      html += `<div class="${cls}" ${apptDates[ds] ? `onclick="showCalDay('${ds}')"` : ""}>${d}</div>`;
+    }
+    html += `</div>`;
+    document.getElementById("miniCalendar").innerHTML = html;
+  }
+
+  function showCalDay(dateStr) {
+    const name = localStorage.getItem("patientUsername") || "john123";
+    const appts = JSON.parse(localStorage.getItem("appointments") || "[]").filter(a =>
+      a.date === dateStr && (a.name === name || (a.name === "John Matthews" && name === "john123"))
+    );
+    const el = document.getElementById("calApptList");
+    el.innerHTML = appts.map(a => `
+      <div class="appt-card" style="margin-bottom:0.5rem;">
+        <div class="appt-title">${a.type}</div>
+        <div class="appt-detail">${a.date} · <span class="status-pill status-${a.status.toLowerCase()}">${a.status}</span></div>
+      </div>`).join("") || "";
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // checkPatientAccess() is triggered by script.js watching navPatientName
+    loadPatientActivity();
+    renderCalendar();
+  });
+</script>
+
+<!-- Chatbase widget -->
+<script>
+(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="uZY8DsD3HD3yRrFmJVF0G";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
+</script>
+
+</body>
+</html>

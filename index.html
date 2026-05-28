@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ClinAssist AI — Clinical Intelligence Simplified</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    height: 100%;
+    font-family: 'DM Sans', sans-serif;
+    background-color: #0f172a;
+    color: #f1f5f9;
+    overflow-x: hidden;
+}
+
+/* ── Backgrounds ── */
+.bg-canvas {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+        radial-gradient(ellipse at 15% 85%, rgba(29,78,216,0.35) 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 15%, rgba(56,189,248,0.06) 0%, transparent 40%),
+        linear-gradient(160deg, #060e20 0%, #0f172a 40%, #0b1f3a 100%);
+}
+
+.bg-grid {
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+        linear-gradient(rgba(29,78,216,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(29,78,216,0.07) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
+}
+
+/* ── Pulse lines (replacing road lines) ── */
+.pulse-lines { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.pl {
+    position: absolute; width: 1px;
+    background: linear-gradient(180deg, transparent 0%, rgba(56,189,248,0.25) 50%, transparent 100%);
+    animation: plScroll linear infinite;
+}
+.pl:nth-child(1)  { left: 8%;  height: 35vh; animation-duration: 4s;   animation-delay: 0s; }
+.pl:nth-child(2)  { left: 22%; height: 25vh; animation-duration: 5.5s; animation-delay: 1s; }
+.pl:nth-child(3)  { left: 38%; height: 40vh; animation-duration: 3.8s; animation-delay: 2s; }
+.pl:nth-child(4)  { left: 55%; height: 30vh; animation-duration: 6s;   animation-delay: 0.5s; }
+.pl:nth-child(5)  { left: 70%; height: 45vh; animation-duration: 4.5s; animation-delay: 1.8s; }
+.pl:nth-child(6)  { left: 85%; height: 28vh; animation-duration: 5s;   animation-delay: 3s; }
+.pl:nth-child(7)  { left: 93%; height: 38vh; animation-duration: 3.5s; animation-delay: 0.8s; }
+
+@keyframes plScroll {
+    0%   { top: -45vh; opacity: 0; }
+    15%  { opacity: 1; }
+    85%  { opacity: 1; }
+    100% { top: 110vh; opacity: 0; }
+}
+
+.orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; animation: orbFloat ease-in-out infinite; }
+.orb-1 { width: 500px; height: 500px; background: rgba(29,78,216,0.18); bottom: -100px; left: -100px; animation-duration: 10s; }
+.orb-2 { width: 350px; height: 350px; background: rgba(56,189,248,0.05); top: -60px; right: -60px; animation-duration: 13s; animation-delay: 3s; }
+
+@keyframes orbFloat {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50%       { transform: translateY(-30px) scale(1.05); }
+}
+
+.page { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── Navbar ── */
+.navbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.5rem 3rem;
+    animation: fadeDown 0.6s ease both;
+}
+
+@keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+.brand-mark {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, #1d4ed8, #0b1f3a);
+    border-radius: 9px; border: 1px solid rgba(56,189,248,0.25);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.brand-mark img { width: 26px; height: 26px; object-fit: contain; }
+.brand-name { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: #fff; letter-spacing: -0.02em; }
+.brand-name span { color: #38bdf8; }
+
+.navbar-pill {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 100px; padding: 0.4rem 1.2rem;
+    font-size: 0.78rem; font-weight: 600; color: rgba(241,245,249,0.6);
+    letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+/* ── Hero ── */
+.hero {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 2rem 2rem 4rem;
+}
+
+.hero__eyebrow {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(56,189,248,0.10); border: 1px solid rgba(56,189,248,0.22);
+    border-radius: 100px; padding: 0.4rem 1rem;
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase;
+    color: #38bdf8; margin-bottom: 2rem;
+    animation: fadeUp 0.7s ease both; animation-delay: 0.1s;
+}
+
+.hero__eyebrow::before {
+    content: ''; width: 6px; height: 6px; background: #38bdf8; border-radius: 50%;
+    animation: blink 1.8s ease-in-out infinite;
+}
+
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero__title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 7vw, 5rem);
+    font-weight: 700; line-height: 1.05; letter-spacing: -0.04em; color: #fff;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.7s ease both; animation-delay: 0.2s;
+}
+
+.hero__title .accent { color: #38bdf8; font-style: italic; }
+.hero__title .line-break { display: block; }
+
+.hero__sub {
+    font-size: 1.05rem; font-weight: 300; color: rgba(241,245,249,0.55);
+    max-width: 48ch; line-height: 1.75; margin-bottom: 3.5rem;
+    animation: fadeUp 0.7s ease both; animation-delay: 0.3s;
+}
+
+/* ── CTA row ── */
+.cta-row {
+    display: flex; align-items: stretch; gap: 1.25rem;
+    animation: fadeUp 0.7s ease both; animation-delay: 0.4s;
+    flex-wrap: wrap; justify-content: center;
+}
+
+/* Primary: Doctor Mode */
+.cta-primary {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0.4rem; padding: 1.1rem 2.5rem;
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    color: #0b1f3a; border: none; border-radius: 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 700;
+    letter-spacing: 0.04em; text-decoration: none; cursor: pointer;
+    transition: all 0.28s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 8px 28px rgba(56,189,248,0.30), 0 2px 6px rgba(56,189,248,0.15);
+    min-width: 200px;
+}
+
+.cta-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 14px 40px rgba(56,189,248,0.45);
+    color: #060e20;
+}
+
+.cta-primary:active { transform: translateY(0) scale(1); }
+
+.cta-primary__main { display: flex; align-items: center; gap: 0.6rem; }
+.cta-primary__main svg { width: 18px; height: 18px; }
+.cta-primary__sub { font-size: 0.72rem; font-weight: 500; opacity: 0.6; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* Divider */
+.cta-divider { display: flex; align-items: center; font-size: 0.78rem; color: rgba(241,245,249,0.3); font-weight: 500; padding: 0 0.25rem; }
+
+/* Secondary group */
+.cta-secondary-group { display: flex; flex-direction: column; gap: 0.6rem; }
+.cta-secondary-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; color: rgba(241,245,249,0.30); text-align: center; }
+.cta-secondary-btns { display: flex; gap: 0.6rem; }
+
+.cta-sec-btn {
+    display: flex; align-items: center; gap: 0.55rem;
+    padding: 0.85rem 1.4rem;
+    background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 12px; color: rgba(241,245,249,0.75);
+    font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 600;
+    text-decoration: none; cursor: pointer; transition: all 0.22s ease;
+    white-space: nowrap; backdrop-filter: blur(8px);
+}
+
+.cta-sec-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+.cta-sec-btn:hover {
+    background: rgba(255,255,255,0.10); border-color: rgba(56,189,248,0.40);
+    color: #38bdf8; transform: translateY(-2px);
+}
+
+/* ── Trust strip ── */
+.trust-strip {
+    display: flex; align-items: center; justify-content: center;
+    gap: 2.5rem; margin-top: 4rem;
+    animation: fadeUp 0.7s ease both; animation-delay: 0.55s;
+    flex-wrap: wrap;
+}
+
+.trust-item { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+.trust-item__value { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: #38bdf8; line-height: 1; }
+.trust-item__label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.10em; color: rgba(241,245,249,0.35); }
+.trust-sep { width: 1px; height: 36px; background: rgba(255,255,255,0.08); }
+
+/* ── Feature badges ── */
+.feature-badges {
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+    margin-top: 2.5rem;
+    animation: fadeUp 0.7s ease both; animation-delay: 0.65s;
+    flex-wrap: wrap;
+}
+
+.feat-badge {
+    display: flex; align-items: center; gap: 0.45rem;
+    padding: 0.45rem 0.9rem;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 100px; font-size: 0.75rem; color: rgba(241,245,249,0.5); font-weight: 500;
+}
+
+.feat-badge span { font-size: 0.9rem; }
+
+/* ── Footer ── */
+.landing-footer {
+    text-align: center; padding: 1.5rem 2rem 2rem;
+    font-size: 0.75rem; color: rgba(241,245,249,0.20);
+    animation: fadeUp 0.6s ease both; animation-delay: 0.7s;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+    .navbar { padding: 1.25rem 1.5rem; }
+    .navbar-pill { display: none; }
+    .cta-row { flex-direction: column; align-items: center; }
+    .cta-divider { display: none; }
+    .cta-secondary-group, .cta-primary { width: 100%; min-width: unset; }
+    .cta-secondary-btns { flex-direction: column; }
+    .cta-sec-btn { justify-content: center; }
+    .trust-strip { gap: 1.5rem; }
+    .trust-sep { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-canvas"></div>
+<div class="bg-grid"></div>
+
+<div class="pulse-lines">
+    <div class="pl"></div><div class="pl"></div><div class="pl"></div>
+    <div class="pl"></div><div class="pl"></div><div class="pl"></div><div class="pl"></div>
+</div>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="page">
+
+    <nav class="navbar">
+        <a href="index.html" class="brand">
+            <div class="brand-mark">
+                <img src="AcnEW.jpg" alt="ClinAssist logo"/>
+            </div>
+            <span class="brand-name">Clin<span>Assist</span> AI</span>
+        </a>
+        <div class="navbar-pill">Beta Access 🩺</div>
+    </nav>
+
+    <main class="hero">
+
+        <div class="hero__eyebrow">AI-Powered Clinical Copilot</div>
+
+        <h1 class="hero__title">
+            <span class="line-break">Clinical intelligence,</span>
+            <span class="accent">simplified.</span>
+        </h1>
+
+        <p class="hero__sub">
+            Reduce documentation overload. Detect high-risk symptoms early.
+            Empower doctors and patients with structured clinical intelligence — in real time.
+        </p>
+
+        <div class="cta-row">
+
+            <!-- Primary: Doctor Mode -->
+            <a href="doctor-login.html" class="cta-primary">
+                <div class="cta-primary__main">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    Doctor Mode
+                </div>
+                <span class="cta-primary__sub">Clinical dashboard</span>
+            </a>
+
+            <div class="cta-divider">or</div>
+
+            <!-- Secondary options -->
+            <div class="cta-secondary-group">
+                <div class="cta-secondary-label">Patient or knowledge base</div>
+                <div class="cta-secondary-btns">
+                    <a href="patient-login.html" class="cta-sec-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        Patient Mode
+                    </a>
+                    <a href="knowledge.html" class="cta-sec-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                        Knowledge Base
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Trust stats -->
+        <div class="trust-strip">
+            <div class="trust-item">
+                <span class="trust-item__value">SOAP</span>
+                <span class="trust-item__label">Auto Notes</span>
+            </div>
+            <div class="trust-sep"></div>
+            <div class="trust-item">
+                <span class="trust-item__value">&lt;2s</span>
+                <span class="trust-item__label">Risk Detection</span>
+            </div>
+            <div class="trust-sep"></div>
+            <div class="trust-item">
+                <span class="trust-item__value">24/7</span>
+                <span class="trust-item__label">Always Available</span>
+            </div>
+            <div class="trust-sep"></div>
+            <div class="trust-item">
+                <span class="trust-item__value">100%</span>
+                <span class="trust-item__label">Exportable Reports</span>
+            </div>
+        </div>
+
+        <!-- Feature badges -->
+        <div class="feature-badges">
+            <div class="feat-badge"><span>⚡</span> Instant Documentation</div>
+            <div class="feat-badge"><span>🚨</span> Risk Detection</div>
+            <div class="feat-badge"><span>📄</span> Clinical Reports</div>
+            <div class="feat-badge"><span>🎙️</span> Voice Input</div>
+            <div class="feat-badge"><span>💊</span> Pharmacy</div>
+            <div class="feat-badge"><span>📅</span> Appointments</div>
+        </div>
+
+    </main>
+
+    <footer class="landing-footer">
+        © 2026 ClinAssist AI &nbsp;·&nbsp; Smart EMR & Diagnosis Assistant &nbsp;·&nbsp; All rights reserved
+    </footer>
+
+</div>
+
+</body>
+</html>

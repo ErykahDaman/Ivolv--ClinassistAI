@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doctor Dashboard | ClinAssist AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0b1120;
+      color: #e2e8f0;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.9rem 2rem;
+      background: rgba(13,24,45,0.9);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-brand { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #fff; text-decoration: none; }
+    .nav-brand span { color: #38bdf8; }
+    .nav-center { font-size: 0.82rem; color: rgba(241,245,249,0.4); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .nav-user { font-size: 0.82rem; color: rgba(241,245,249,0.5); }
+    .btn-nav {
+      padding: 0.42rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05); color: #e2e8f0; font-size: 0.8rem;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.18s;
+      text-decoration: none; display: inline-flex; align-items: center;
+    }
+    .btn-nav:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+
+    .info-banner {
+      background: rgba(29,78,216,0.1);
+      border-bottom: 1px solid rgba(56,189,248,0.1);
+      padding: 0.75rem 2rem;
+      font-size: 0.8rem; color: rgba(241,245,249,0.5);
+      display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;
+    }
+    .info-banner strong { color: #38bdf8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; }
+    .info-banner ul { list-style: none; display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 0; padding: 0; }
+    .info-banner li::before { content: '·'; margin-right: 0.4rem; color: #38bdf8; }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 1.25rem;
+      padding: 1.5rem 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: rgba(13,24,45,0.75);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 1.5rem;
+      backdrop-filter: blur(10px);
+    }
+    .card + .card { margin-top: 1.25rem; }
+    .card-title {
+      font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.1em; color: #38bdf8; margin-bottom: 1.1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .card-title svg { width: 15px; height: 15px; }
+
+    .patient-selector {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 1.1rem; padding: 0.75rem 1rem;
+      background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.15);
+      border-radius: 12px;
+    }
+    .patient-selector label { font-size: 0.75rem; color: rgba(241,245,249,0.5); white-space: nowrap; }
+    .patient-selector select {
+      flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; color: #e2e8f0; font-size: 0.88rem; font-family: 'DM Sans', sans-serif;
+      padding: 0.5rem 0.75rem; outline: none; cursor: pointer;
+    }
+    .patient-selector select:focus { border-color: rgba(56,189,248,0.4); }
+    .patient-selector select option { background: #0f172a; }
+
+    .mode-toggle { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .mode-btn {
+      padding: 0.45rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+      background: transparent; color: rgba(241,245,249,0.45); font-size: 0.82rem;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.18s;
+    }
+    .mode-btn.active { background: rgba(29,78,216,0.3); border-color: rgba(56,189,248,0.4); color: #fff; }
+
+    .dash-textarea {
+      width: 100%; min-height: 120px; resize: vertical;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 12px; color: #e2e8f0; font-size: 0.88rem;
+      font-family: 'DM Sans', sans-serif; padding: 0.85rem 1rem;
+      outline: none; transition: border-color 0.2s; line-height: 1.6;
+    }
+    .dash-textarea:focus { border-color: rgba(56,189,248,0.4); }
+    .dash-textarea::placeholder { color: rgba(241,245,249,0.2); }
+
+    .voice-status {
+      font-size: 0.8rem; color: #38bdf8; margin-top: 0.5rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .voice-dot { width: 7px; height: 7px; background: #38bdf8; border-radius: 50%; animation: blink 1.2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    .btn-primary {
+      padding: 0.72rem 1.4rem; border-radius: 10px;
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      border: 1px solid rgba(56,189,248,0.2); color: #fff;
+      font-size: 0.88rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.18s; letter-spacing: 0.02em;
+    }
+    .btn-primary:hover { background: linear-gradient(135deg, #2563eb, #1d4ed8); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(29,78,216,0.3); }
+    .btn-secondary {
+      padding: 0.62rem 1.1rem; border-radius: 10px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(241,245,249,0.7); font-size: 0.82rem; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.18); }
+    .btn-success {
+      padding: 0.55rem 1rem; border-radius: 8px;
+      background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3);
+      color: #86efac; font-size: 0.78rem; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.18s;
+    }
+    .btn-success:hover { background: rgba(34,197,94,0.22); }
+    .btn-warn {
+      padding: 0.55rem 1rem; border-radius: 8px;
+      background: rgba(234,179,8,0.12); border: 1px solid rgba(234,179,8,0.25);
+      color: #fde047; font-size: 0.78rem; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.18s;
+    }
+    .btn-warn:hover { background: rgba(234,179,8,0.2); }
+    .btn-danger {
+      padding: 0.55rem 1rem; border-radius: 8px;
+      background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25);
+      color: #fca5a5; font-size: 0.78rem; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.18s;
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+    .actions { display: flex; gap: 0.65rem; margin-top: 1rem; flex-wrap: wrap; }
+
+    .output-box {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px; padding: 1rem; font-size: 0.85rem;
+      color: rgba(241,245,249,0.75); white-space: pre-wrap; line-height: 1.7;
+      margin-bottom: 0.9rem;
+    }
+    .output-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: rgba(241,245,249,0.35); margin-bottom: 0.4rem; }
+    .risk-box { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.9rem; letter-spacing: 0.02em; }
+
+    .sub-card {
+      padding: 1rem; border-radius: 12px; margin-bottom: 0.75rem;
+      border: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.03);
+      transition: border-color 0.2s;
+    }
+    .sub-card:hover { border-color: rgba(56,189,248,0.2); }
+    .sub-card.priority-high     { border-left: 3px solid #ef4444; }
+    .sub-card.priority-moderate { border-left: 3px solid #f97316; }
+    .sub-card.priority-low      { border-left: 3px solid #22c55e; }
+    .sub-name    { font-size: 0.9rem; font-weight: 600; color: #f1f5f9; margin-bottom: 0.25rem; }
+    .sub-summary { font-size: 0.82rem; color: rgba(241,245,249,0.55); margin-bottom: 0.4rem; line-height: 1.5; }
+    .sub-meta    { font-size: 0.72rem; color: rgba(241,245,249,0.3); margin-bottom: 0.5rem; }
+    .risk-badge  { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+    .risk-high     { background: rgba(239,68,68,0.18);  color: #fca5a5; }
+    .risk-moderate { background: rgba(249,115,22,0.18); color: #fdba74; }
+    .risk-low      { background: rgba(34,197,94,0.18);  color: #86efac; }
+
+    .appt-card    { padding: 1rem; border-radius: 12px; margin-bottom: 0.75rem; border: 1px solid rgba(255,255,255,0.07); background: rgba(255,255,255,0.03); }
+    .appt-name    { font-size: 0.88rem; font-weight: 600; color: #f1f5f9; margin-bottom: 0.2rem; }
+    .appt-detail  { font-size: 0.8rem; color: rgba(241,245,249,0.5); margin-bottom: 0.5rem; line-height: 1.6; }
+    .appt-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.6rem; }
+    .status-pill  { display: inline-block; padding: 0.18rem 0.55rem; border-radius: 6px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .status-pending     { background: rgba(234,179,8,0.15);  color: #fde047; }
+    .status-approved    { background: rgba(34,197,94,0.15);  color: #86efac; }
+    .status-rescheduled { background: rgba(56,189,248,0.15); color: #7dd3fc; }
+    .status-declined    { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+
+    .rx-form { display: flex; flex-direction: column; gap: 0.75rem; }
+    .rx-row  { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .rx-field label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(241,245,249,0.4); display: block; margin-bottom: 0.35rem; }
+    .rx-input {
+      width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; color: #e2e8f0; font-size: 0.85rem; font-family: 'DM Sans', sans-serif;
+      padding: 0.65rem 0.85rem; outline: none; transition: border-color 0.2s;
+    }
+    .rx-input:focus { border-color: rgba(56,189,248,0.4); }
+    .rx-input::placeholder { color: rgba(241,245,249,0.2); }
+    .rx-input option { background: #0f172a; }
+
+    .section-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 1.25rem 0; }
+    .hidden { display: none !important; }
+    .empty-state { text-align: center; padding: 1.5rem; color: rgba(241,245,249,0.25); font-size: 0.83rem; }
+    .scroll-panel { max-height: 340px; overflow-y: auto; padding-right: 2px; }
+    .scroll-panel::-webkit-scrollbar { width: 4px; }
+    .scroll-panel::-webkit-scrollbar-track { background: transparent; }
+    .scroll-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+    @media (max-width: 900px) {
+      .dashboard-grid { grid-template-columns: 1fr; padding: 1rem; }
+      nav { padding: 0.8rem 1rem; }
+      .info-banner { padding: 0.65rem 1rem; }
+      .rx-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">Clin<span>Assist</span> AI</a>
+  <span class="nav-center">Doctor Dashboard</span>
+  <div class="nav-right">
+    <span class="nav-user" id="navDoctorName">Dr. —</span>
+    <a href="profile-doctor.html" class="btn-nav" title="Profile & Settings">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </a>
+    <a href="support-report.html" class="btn-nav" title="Support & Report">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r="0.5" fill="currentColor"/></svg>
+    </a>
+    <button class="btn-nav" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="info-banner">
+  <strong>How It Works</strong>
+  <ul>
+    <li>Select a patient then run consultation analysis</li>
+    <li>Approve or reschedule appointment requests</li>
+    <li>Send digital prescriptions directly to patients</li>
+    <li>Download SOAP reports as PDF</li>
+  </ul>
+</div>
+
+<div class="dashboard-grid">
+
+  <!-- LEFT COLUMN -->
+  <div class="left-col">
+
+    <!-- CONSULTATION -->
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        New Consultation
+      </div>
+
+      <div class="patient-selector">
+        <label for="consultPatientSelect">Consulting:</label>
+        <select id="consultPatientSelect" onchange="onPatientSelected()">
+          <option value="">— Select a patient —</option>
+        </select>
+      </div>
+
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="typeModeBtn"  onclick="setMode('type')">📝 Type</button>
+        <button class="mode-btn"        id="voiceModeBtn" onclick="setMode('voice')">🎤 Voice AI</button>
+      </div>
+
+      <textarea class="dash-textarea" id="doctorInput" placeholder="Enter consultation notes or patient-reported symptoms…"></textarea>
+
+      <div id="voiceStatus" class="voice-status hidden">
+        <span class="voice-dot"></span> Listening…
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" onclick="analyzeDoctor()">Analyze Consultation</button>
+      </div>
+
+      <div id="doctorOutput" class="hidden" style="margin-top:1.25rem;">
+        <div class="section-divider"></div>
+        <div class="output-label">Structured SOAP Note</div>
+        <div id="soap" class="output-box"></div>
+        <div class="output-label">Risk Assessment</div>
+        <div id="risk" class="risk-box"></div>
+        <div class="output-label">Diagnostic Category</div>
+        <div id="diagnosis" class="output-box"></div>
+        <div class="actions">
+          <button class="btn-secondary" onclick="downloadDoctorPDF()">⬇ Download Report</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRESCRIPTION -->
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
+        Send Prescription
+      </div>
+
+      <div class="rx-form">
+        <div class="rx-field">
+          <label>Patient</label>
+          <select class="rx-input" id="rxPatientSelect">
+            <option value="">— Select patient —</option>
+          </select>
+        </div>
+        <div class="rx-row">
+          <div class="rx-field">
+            <label>Medication</label>
+            <input class="rx-input" id="rxMedication" type="text" placeholder="e.g. Amoxicillin 500mg"/>
+          </div>
+          <div class="rx-field">
+            <label>Dosage</label>
+            <input class="rx-input" id="rxDosage" type="text" placeholder="e.g. 1 tablet 3×/day"/>
+          </div>
+        </div>
+        <div class="rx-row">
+          <div class="rx-field">
+            <label>Duration</label>
+            <input class="rx-input" id="rxDuration" type="text" placeholder="e.g. 7 days"/>
+          </div>
+          <div class="rx-field">
+            <label>Refills</label>
+            <select class="rx-input" id="rxRefills">
+              <option value="0">No refills</option>
+              <option value="1">1 refill</option>
+              <option value="2">2 refills</option>
+              <option value="3">3 refills</option>
+            </select>
+          </div>
+        </div>
+        <div class="rx-field">
+          <label>Notes / Instructions</label>
+          <textarea class="rx-input dash-textarea" id="rxNotes" rows="2" placeholder="Take with food. Avoid alcohol…" style="min-height:70px;"></textarea>
+        </div>
+        <div class="actions">
+          <button class="btn-primary" onclick="sendPrescription()">Send Prescription</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Patient Submissions
+        <span style="margin-left:auto; font-size:0.7rem; color:rgba(241,245,249,0.3); font-weight:400; text-transform:none; letter-spacing:0;">Sorted by risk</span>
+      </div>
+      <div class="scroll-panel" id="patientSubmissions">
+        <div class="empty-state">No submissions yet</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Appointment Requests
+      </div>
+      <div class="scroll-panel" id="appointments">
+        <div class="empty-state">No appointments yet</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- script.js FIRST — defines all shared functions including voice, login, risk engine -->
+<script src="script.js"></script>
+
+<!-- Dashboard-only functions that don't exist in script.js -->
+<script>
+  function getKnownPatients() {
+    const names = new Set();
+    const all = [
+      ...JSON.parse(localStorage.getItem("submissions")   || "[]"),
+      ...JSON.parse(localStorage.getItem("appointments")  || "[]"),
+      ...JSON.parse(localStorage.getItem("prescriptions") || "[]")
+    ];
+    all.forEach(r => { if (r.name && r.name !== "Live Patient") names.add(r.name); });
+    ["John Matthews", "Sarah Johnson", "Peter Williams"].forEach(n => names.add(n));
+    return [...names];
+  }
+
+  function populatePatientSelectors() {
+    const patients = getKnownPatients();
+    ["consultPatientSelect", "rxPatientSelect"].forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      const current = sel.value;
+      while (sel.options.length > 1) sel.remove(1);
+      patients.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = opt.textContent = name;
+        sel.appendChild(opt);
+      });
+      if (current) sel.value = current;
+    });
+  }
+
+  function onPatientSelected() {
+    const name = document.getElementById("consultPatientSelect").value;
+    if (!name) return;
+    const submissions = JSON.parse(localStorage.getItem("submissions") || "[]");
+    const last = [...submissions].reverse().find(s => s.name === name);
+    if (last) {
+      const ta = document.getElementById("doctorInput");
+      if (ta && !ta.value) ta.value = last.summary;
+    }
+  }
+
+  function sendPrescription() {
+    const patient  = document.getElementById("rxPatientSelect").value;
+    const med      = document.getElementById("rxMedication").value.trim();
+    const dosage   = document.getElementById("rxDosage").value.trim();
+    const duration = document.getElementById("rxDuration").value.trim();
+    const refills  = document.getElementById("rxRefills").value;
+    const notes    = document.getElementById("rxNotes").value.trim();
+
+    if (!patient || !med || !dosage) {
+      alert("Please select a patient and fill in medication and dosage.");
+      return;
+    }
+
+    const prescriptions = JSON.parse(localStorage.getItem("prescriptions") || "[]");
+    prescriptions.push({
+      patient, medication: med, dosage, duration, refills, notes,
+      issuedBy: localStorage.getItem("doctorName") || "Your Doctor",
+      date: new Date().toLocaleString(),
+      status: "Active"
+    });
+    localStorage.setItem("prescriptions", JSON.stringify(prescriptions));
+    alert(`Prescription for ${patient} sent successfully.`);
+
+    document.getElementById("rxMedication").value = "";
+    document.getElementById("rxDosage").value     = "";
+    document.getElementById("rxDuration").value   = "";
+    document.getElementById("rxNotes").value      = "";
+    document.getElementById("rxRefills").value    = "0";
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // Seed demo data if localStorage is empty
+    if (!localStorage.getItem("submissions")) {
+      localStorage.setItem("submissions", JSON.stringify([
+        { name: "John Matthews",  summary: "Chest pain and shortness of breath for 2 days", date: "2026-02-20 09:15 AM" },
+        { name: "Sarah Johnson",  summary: "High fever and persistent cough for 3 days",     date: "2026-02-20 11:40 AM" },
+        { name: "Peter Williams", summary: "Severe headache and dizziness since morning",    date: "2026-02-21 08:10 AM" }
+      ]));
+    }
+    if (!localStorage.getItem("appointments")) {
+      localStorage.setItem("appointments", JSON.stringify([
+        { name: "John Matthews",  date: "2026-02-25", type: "Online Consultation", status: "Pending"  },
+        { name: "Sarah Johnson",  date: "2026-02-26", type: "Physical Visit",      status: "Approved" },
+        { name: "Peter Williams", date: "2026-02-27", type: "Online Consultation", status: "Pending"  }
+      ]));
+    }
+    // checkDoctorAccess() and loadDoctorActivity() are called by script.js DOMContentLoaded
+    // but populatePatientSelectors needs to run after loadDoctorActivity seeds data
+    populatePatientSelectors();
+  });
+</script>
+
+<!-- Chatbase widget -->
+<script>
+(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="uZY8DsD3HD3yRrFmJVF0G";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
+</script>
+
+<script type="module" src="firebase.js"></script>
+
+</body>
+</html>

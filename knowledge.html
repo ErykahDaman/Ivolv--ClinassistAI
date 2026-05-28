@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Medical Knowledge Hub | ClinAssist AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+        .bg-canvas {
+            position: fixed; inset: 0; z-index: 0;
+            background:
+                    radial-gradient(ellipse at 15% 85%, rgba(29,78,216,0.3) 0%, transparent 45%),
+                    radial-gradient(ellipse at 85% 15%, rgba(56,189,248,0.05) 0%, transparent 40%),
+                    linear-gradient(160deg, #060e20 0%, #0f172a 40%, #0b1f3a 100%);
+        }
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 0;
+            background-image: linear-gradient(rgba(29,78,216,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(29,78,216,0.06) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
+        }
+        .pulse-lines { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .pl { position: absolute; width: 1px; background: linear-gradient(180deg, transparent 0%, rgba(56,189,248,0.18) 50%, transparent 100%); animation: plScroll linear infinite; }
+        .pl:nth-child(1)  { left: 5%;  height: 30vh; animation-duration: 5s;   animation-delay: 0s; }
+        .pl:nth-child(2)  { left: 20%; height: 22vh; animation-duration: 6.5s; animation-delay: 1s; }
+        .pl:nth-child(3)  { left: 42%; height: 38vh; animation-duration: 4.2s; animation-delay: 2s; }
+        .pl:nth-child(4)  { left: 60%; height: 28vh; animation-duration: 7s;   animation-delay: 0.5s; }
+        .pl:nth-child(5)  { left: 78%; height: 42vh; animation-duration: 5.5s; animation-delay: 1.8s; }
+        .pl:nth-child(6)  { left: 92%; height: 26vh; animation-duration: 4.8s; animation-delay: 3s; }
+        @keyframes plScroll { 0% { top: -45vh; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { top: 110vh; opacity: 0; } }
+        .orb { position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; animation: orbFloat ease-in-out infinite; }
+        .orb-1 { width: 450px; height: 450px; background: rgba(29,78,216,0.15); bottom: -80px; left: -80px; animation-duration: 11s; }
+        .orb-2 { width: 300px; height: 300px; background: rgba(56,189,248,0.05); top: -50px; right: -50px; animation-duration: 14s; animation-delay: 3s; }
+        @keyframes orbFloat { 0%, 100% { transform: translateY(0px) scale(1); } 50% { transform: translateY(-25px) scale(1.04); } }
+        .page { position: relative; z-index: 1; min-height: 100vh; }
+        .navbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.25rem 3rem; border-bottom: 1px solid rgba(255,255,255,0.06);
+            animation: fadeDown 0.6s ease both; backdrop-filter: blur(10px);
+            background: rgba(11,31,58,0.6); position: sticky; top: 0; z-index: 100;
+        }
+        @keyframes fadeDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+        .brand { display: flex; align-items: center; gap: 0.6rem; text-decoration: none; }
+        .brand-mark {
+            width: 32px; height: 32px; background: linear-gradient(135deg, #1d4ed8, #0b1f3a);
+            border-radius: 8px; border: 1px solid rgba(56,189,248,0.25);
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        .brand-mark img { width: 22px; height: 22px; object-fit: contain; }
+        .brand-name { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; color: #fff; }
+        .brand-name span { color: #38bdf8; }
+        .nav-back { display: flex; align-items: center; gap: 0.4rem; color: rgba(241,245,249,0.5); font-size: 0.85rem; font-weight: 500; text-decoration: none; transition: color 0.2s; }
+        .nav-back:hover { color: #38bdf8; }
+        .nav-back svg { width: 14px; height: 14px; }
+        .page-header { text-align: center; padding: 3.5rem 2rem 2.5rem; animation: fadeUp 0.7s ease both; animation-delay: 0.1s; }
+        .page-header__eyebrow {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: rgba(56,189,248,0.10); border: 1px solid rgba(56,189,248,0.22);
+            border-radius: 100px; padding: 0.35rem 0.9rem; font-size: 0.72rem; font-weight: 600;
+            letter-spacing: 0.10em; text-transform: uppercase; color: #38bdf8; margin-bottom: 1.25rem;
+        }
+        .page-header__eyebrow::before { content: ''; width: 5px; height: 5px; background: #38bdf8; border-radius: 50%; animation: blink 1.8s ease-in-out infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .page-header h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 700; color: #fff; letter-spacing: -0.03em; margin-bottom: 0.75rem; }
+        .page-header h1 em { color: #38bdf8; font-style: italic; }
+        .page-header p { color: rgba(241,245,249,0.5); font-size: 0.95rem; font-weight: 300; max-width: 50ch; margin: 0 auto; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+        .top10-section { max-width: 1100px; margin: 0 auto; padding: 0 2rem 2.5rem; animation: fadeUp 0.7s ease both; animation-delay: 0.2s; }
+        .section-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(241,245,249,0.3); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .section-label::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
+        .top10-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.6rem; }
+        .top10-pill { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.9rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; font-size: 0.8rem; font-weight: 500; color: rgba(241,245,249,0.7); cursor: pointer; transition: all 0.2s; text-decoration: none; }
+        .top10-pill:hover { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.3); color: #38bdf8; }
+
+        .filter-bar { max-width: 1100px; margin: 0 auto; padding: 0 2rem 2rem; animation: fadeUp 0.7s ease both; animation-delay: 0.25s; }
+        .filter-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .filter-label { font-size: 0.72rem; color: rgba(241,245,249,0.3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-right: 0.3rem; }
+        .filter-btn { padding: 0.4rem 0.85rem; border-radius: 100px; border: 1px solid rgba(255,255,255,0.10); background: rgba(255,255,255,0.04); color: rgba(241,245,249,0.55); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+        .filter-btn:hover, .filter-btn.active { background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.35); color: #38bdf8; }
+
+        .az-bar { max-width: 1100px; margin: 0 auto; padding: 0 2rem 2.5rem; animation: fadeUp 0.7s ease both; animation-delay: 0.3s; }
+        .az-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+        .az-btn { width: 32px; height: 32px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); color: rgba(241,245,249,0.4); font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; justify-content: center; }
+        .az-btn:hover { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.3); color: #38bdf8; }
+        .az-btn.has-items { color: rgba(241,245,249,0.65); border-color: rgba(255,255,255,0.12); }
+        .az-btn.active { background: rgba(56,189,248,0.15); border-color: rgba(56,189,248,0.4); color: #38bdf8; }
+
+        .hub-body { max-width: 1100px; margin: 0 auto; padding: 0 2rem 4rem; display: flex; flex-direction: column; gap: 2.5rem; }
+
+        .cat-block { animation: fadeUp 0.6s ease both; }
+        .cat-block:nth-child(1) { animation-delay: 0.3s; }
+        .cat-block:nth-child(2) { animation-delay: 0.35s; }
+        .cat-block:nth-child(3) { animation-delay: 0.4s; }
+        .cat-block:nth-child(4) { animation-delay: 0.45s; }
+
+        .cat-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+        .cat-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(29,78,216,0.2); border: 1px solid rgba(29,78,216,0.3); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .cat-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: #fff; }
+        .cat-subtitle { font-size: 0.78rem; color: rgba(241,245,249,0.35); font-weight: 400; margin-top: 0.1rem; }
+
+        .subcat { margin-bottom: 1.25rem; }
+        .subcat-header { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0; margin-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .subcat-title { font-size: 0.82rem; font-weight: 600; color: rgba(241,245,249,0.5); text-transform: uppercase; letter-spacing: 0.08em; }
+        .subcat-count { font-size: 0.68rem; background: rgba(56,189,248,0.12); color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 100px; font-weight: 600; }
+
+        .illness-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 0.75rem; }
+
+        .illness-card { background: rgba(17,28,47,0.85); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; overflow: hidden; transition: all 0.22s ease; cursor: pointer; }
+        .illness-card:hover { border-color: rgba(56,189,248,0.25); background: rgba(29,78,216,0.09); transform: translateY(-2px); }
+        .illness-card.open { border-color: rgba(56,189,248,0.3); background: rgba(17,28,50,0.95); transform: none; }
+
+        .illness-card__header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.1rem 0.7rem; gap: 0.5rem; }
+        .illness-card__name { font-weight: 600; font-size: 0.95rem; color: #f1f5f9; flex: 1; }
+        .illness-tags { display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
+
+        .tag { font-size: 0.6rem; font-weight: 700; padding: 0.18rem 0.5rem; border-radius: 100px; letter-spacing: 0.05em; text-transform: uppercase; }
+        .tag-contagious    { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+        .tag-noncontagious { background: rgba(34,197,94,0.12);  color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+        .tag-chronic       { background: rgba(168,85,247,0.13); color: #c084fc; border: 1px solid rgba(168,85,247,0.25); }
+        .tag-acute         { background: rgba(251,146,60,0.13); color: #fb923c; border: 1px solid rgba(251,146,60,0.25); }
+        .tag-urgent        { background: rgba(239,68,68,0.18);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+
+        .severity-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .sev-low    { background: #4ade80; }
+        .sev-mod    { background: #facc15; }
+        .sev-high   { background: #f87171; }
+        .sev-critical { background: #ef4444; animation: pulse-dot 1.5s ease-in-out infinite; }
+        @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .illness-card__body { padding: 0 1.1rem; max-height: 0; overflow: hidden; transition: max-height 0.45s ease, padding 0.2s ease; }
+        .illness-card.open .illness-card__body { max-height: 1400px; padding: 0 1.1rem 1.1rem; }
+
+        .card-summary {
+            background: rgba(56,189,248,0.07); border: 1px solid rgba(56,189,248,0.15);
+            border-radius: 10px; padding: 0.75rem 0.9rem; margin-bottom: 1rem;
+        }
+        .card-summary p { font-size: 0.83rem; color: rgba(241,245,249,0.75); line-height: 1.6; }
+
+        .card-section { margin-bottom: 0.9rem; }
+        .card-section:last-child { margin-bottom: 0; }
+        .card-section-title {
+            font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.10em;
+            color: #38bdf8; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;
+        }
+        .card-section-title::after { content: ''; flex: 1; height: 1px; background: rgba(56,189,248,0.15); }
+
+        .card-list { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
+        .card-list li { font-size: 0.81rem; color: rgba(241,245,249,0.62); line-height: 1.5; padding-left: 1rem; position: relative; }
+        .card-list li::before { content: '·'; position: absolute; left: 0; color: rgba(56,189,248,0.5); font-weight: 700; }
+        .card-list li.red-flag { color: #fca5a5; }
+        .card-list li.red-flag::before { content: '⚠'; font-size: 0.65rem; top: 0.1rem; color: #f87171; }
+
+        .duration-badge { display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.2); border-radius: 100px; padding: 0.2rem 0.65rem; font-size: 0.7rem; font-weight: 600; color: #c084fc; margin-top: 0.4rem; }
+
+        .card-disclaimer { margin-top: 0.9rem; padding: 0.6rem 0.8rem; background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.18); border-radius: 8px; font-size: 0.72rem; color: rgba(241,245,249,0.45); line-height: 1.55; }
+        .card-disclaimer strong { color: rgba(239,68,68,0.8); }
+
+        .card-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 0.75rem 0; }
+
+        .illness-card__toggle { display: flex; align-items: center; justify-content: center; padding: 0.45rem; border-top: 1px solid rgba(255,255,255,0.05); color: rgba(241,245,249,0.25); font-size: 0.7rem; gap: 0.3rem; transition: color 0.2s; }
+        .illness-card:hover .illness-card__toggle { color: rgba(56,189,248,0.5); }
+        .illness-card.open .illness-card__toggle { color: rgba(56,189,248,0.6); border-top-color: rgba(56,189,248,0.1); }
+        .toggle-arrow { transition: transform 0.3s; font-size: 0.8rem; display: inline-block; }
+        .illness-card.open .toggle-arrow { transform: rotate(180deg); }
+        .toggle-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.05em; }
+
+        .search-wrap { max-width: 1100px; margin: 0 auto; padding: 0 2rem 1.5rem; animation: fadeUp 0.7s ease both; animation-delay: 0.15s; }
+        .search-box { width: 100%; padding: 0.85rem 1.25rem 0.85rem 2.75rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; color: #f1f5f9; font-size: 0.9rem; font-family: 'DM Sans', sans-serif; transition: all 0.2s; outline: none; }
+        .search-box:focus { border-color: rgba(56,189,248,0.4); background: rgba(56,189,248,0.05); }
+        .search-box::placeholder { color: rgba(241,245,249,0.3); }
+        .search-outer { position: relative; }
+        .search-icon { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: rgba(241,245,249,0.3); pointer-events: none; }
+        .search-icon svg { width: 16px; height: 16px; display: block; }
+
+        .hub-footer { text-align: center; padding: 2rem; font-size: 0.72rem; color: rgba(241,245,249,0.18); }
+        .illness-card.hidden { display: none; }
+        .no-results { text-align: center; padding: 3rem 2rem; color: rgba(241,245,249,0.3); font-size: 0.9rem; display: none; }
+        .no-results.show { display: block; }
+
+        /* Stats bar */
+        .stats-bar { max-width: 1100px; margin: 0 auto; padding: 0 2rem 2rem; display: flex; gap: 1rem; flex-wrap: wrap; animation: fadeUp 0.7s ease both; animation-delay: 0.18s; }
+        .stat-chip { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; }
+        .stat-chip .stat-num { font-size: 1.1rem; font-weight: 700; color: #38bdf8; font-family: 'Playfair Display', serif; }
+        .stat-chip .stat-lbl { font-size: 0.72rem; color: rgba(241,245,249,0.4); font-weight: 500; }
+
+        @media (max-width: 640px) {
+            .navbar { padding: 1rem 1.25rem; }
+            .hub-body { padding: 0 1rem 3rem; }
+            .top10-section, .filter-bar, .az-bar, .search-wrap, .stats-bar { padding-left: 1rem; padding-right: 1rem; }
+            .illness-grid { grid-template-columns: 1fr; }
+            .top10-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+<div class="bg-canvas"></div>
+<div class="bg-grid"></div>
+<div class="pulse-lines">
+    <div class="pl"></div><div class="pl"></div><div class="pl"></div>
+    <div class="pl"></div><div class="pl"></div><div class="pl"></div>
+</div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="page">
+
+    <nav class="navbar">
+        <a href="index.html" class="brand">
+            <div class="brand-mark"><img src="AcnEW.jpg" alt="ClinAssist"/></div>
+            <span class="brand-name">Clin<span>Assist</span> AI</span>
+        </a>
+        <a href="index.html" class="nav-back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to Home
+        </a>
+    </nav>
+
+    <div class="page-header">
+        <div class="page-header__eyebrow">Evidence-Based Information</div>
+        <h1>Medical <em>Knowledge Hub</em></h1>
+        <p>Browse conditions by body system, symptoms, patient profile, or urgency — with contagion and severity indicators on every card.</p>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-chip"><span class="stat-num" id="totalCount">0</span><span class="stat-lbl">Total Conditions</span></div>
+        <div class="stat-chip"><span class="stat-num" id="visibleCount">0</span><span class="stat-lbl">Showing</span></div>
+        <div class="stat-chip"><span class="stat-num">4</span><span class="stat-lbl">Body Systems</span></div>
+        <div class="stat-chip"><span class="stat-num">6</span><span class="stat-lbl">Categories</span></div>
+    </div>
+
+    <div class="search-wrap">
+        <div class="search-outer">
+            <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+            <input class="search-box" type="text" id="searchInput" placeholder="Search any condition, symptom, or keyword…"/>
+        </div>
+    </div>
+
+    <div class="top10-section">
+        <div class="section-label">⭐ Top 10 Most Searched</div>
+        <div class="top10-grid">
+            <a class="top10-pill" href="#" data-scroll="diabetes">#1 <span style="flex:1;margin-left:0.4rem">Diabetes</span></a>
+            <a class="top10-pill" href="#" data-scroll="hypertension">#2 <span style="flex:1;margin-left:0.4rem">Hypertension</span></a>
+            <a class="top10-pill" href="#" data-scroll="covid-19">#3 <span style="flex:1;margin-left:0.4rem">COVID-19</span></a>
+            <a class="top10-pill" href="#" data-scroll="malaria">#4 <span style="flex:1;margin-left:0.4rem">Malaria</span></a>
+            <a class="top10-pill" href="#" data-scroll="asthma">#5 <span style="flex:1;margin-left:0.4rem">Asthma</span></a>
+            <a class="top10-pill" href="#" data-scroll="depression">#6 <span style="flex:1;margin-left:0.4rem">Depression</span></a>
+            <a class="top10-pill" href="#" data-scroll="stroke">#7 <span style="flex:1;margin-left:0.4rem">Stroke</span></a>
+            <a class="top10-pill" href="#" data-scroll="hiv-aids">#8 <span style="flex:1;margin-left:0.4rem">HIV/AIDS</span></a>
+            <a class="top10-pill" href="#" data-scroll="pneumonia">#9 <span style="flex:1;margin-left:0.4rem">Pneumonia</span></a>
+            <a class="top10-pill" href="#" data-scroll="arthritis">#10 <span style="flex:1;margin-left:0.4rem">Arthritis</span></a>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <div class="section-label">🔬 Quick Filters</div>
+        <div class="filter-row">
+            <span class="filter-label">Type:</span>
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="contagious">🦠 Contagious</button>
+            <button class="filter-btn" data-filter="noncontagious">🛡️ Non-Contagious</button>
+            <button class="filter-btn" data-filter="chronic">⏳ Chronic</button>
+            <button class="filter-btn" data-filter="acute">⚡ Acute</button>
+            <button class="filter-btn" data-filter="urgent">🚨 Urgent</button>
+        </div>
+    </div>
+
+    <div class="az-bar">
+        <div class="section-label">🔤 A–Z Index</div>
+        <div class="az-row" id="azRow"></div>
+    </div>
+
+    <div class="no-results" id="noResults">No conditions match your search or filter.</div>
+
+    <!-- ============================== MAIN BODY ============================== -->
+    <div class="hub-body" id="hubBody">
+
+        <!-- ======================================= -->
+        <!-- CATEGORY 1: BY BODY PART & SYSTEM -->
+        <!-- ======================================= -->
+        <div class="cat-block">
+            <div class="cat-header">
+                <div class="cat-icon">🫀</div>
+                <div>
+                    <div class="cat-title">By Body Part &amp; System</div>
+                    <div class="cat-subtitle">Where does it hurt?</div>
+                </div>
+            </div>
+
+            <!-- Heart & Blood -->
+            <div class="subcat">
+                <div class="subcat-header">
+                    <span class="subcat-title">❤️ Heart &amp; Blood</span>
+                    <span class="subcat-count">3</span>
+                </div>
+                <div class="illness-grid">
+
+                    <!-- HYPERTENSION -->
+                    <div class="illness-card" id="card-hypertension" data-name="hypertension high blood pressure" data-tags="noncontagious chronic" data-letter="H">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">Hypertension</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-noncontagious">Non-Contagious</span>
+                                <span class="tag tag-chronic">Chronic</span>
+                                <span class="severity-dot sev-mod" title="Moderate severity"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>Hypertension is persistently elevated blood pressure in the arteries (≥130/80 mmHg). It is a chronic, non-contagious condition and often has no symptoms — making it a "silent killer" that quietly damages the heart, kidneys, and brain over time.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Common Symptoms</div>
+                                <ul class="card-list">
+                                    <li>Usually no symptoms in early stages</li>
+                                    <li>Occasional headaches at the back of the head (morning)</li>
+                                    <li>Dizziness or light-headedness</li>
+                                    <li>Blurred or double vision</li>
+                                    <li>Nosebleeds in severe cases</li>
+                                    <li class="red-flag">Severe headache, chest pain, or sudden vision loss — seek emergency care immediately</li>
+                                    <li class="red-flag">Shortness of breath or confusion could signal hypertensive crisis</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Causes &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>Primary (essential) hypertension: no single identifiable cause; develops gradually</li>
+                                    <li>Secondary: caused by kidney disease, thyroid disorders, or certain medications</li>
+                                    <li>Risk factors: high-salt diet, obesity, physical inactivity, smoking, excess alcohol</li>
+                                    <li>Family history and increasing age significantly raise risk</li>
+                                    <li>Chronic stress and sleep disorders (e.g. sleep apnoea) are contributing triggers</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Management &amp; Treatment</div>
+                                <ul class="card-list">
+                                    <li>Lifestyle: reduce sodium intake, exercise 150 min/week, limit alcohol, quit smoking</li>
+                                    <li>Medications: ACE inhibitors, calcium channel blockers, beta-blockers, diuretics</li>
+                                    <li>Regular blood pressure monitoring at home and clinic</li>
+                                    <li>DASH diet (Dietary Approaches to Stop Hypertension) is evidence-based</li>
+                                </ul>
+                                <div class="duration-badge">⏱ Lifelong management required</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention</div>
+                                <ul class="card-list">
+                                    <li>Maintain a healthy weight (BMI 18.5–24.9)</li>
+                                    <li>Eat a diet rich in fruits, vegetables, and low-fat dairy</li>
+                                    <li>Limit salt to under 5g per day</li>
+                                    <li>Annual blood pressure checks from age 18; more frequent if at risk</li>
+                                    <li>Manage stress through mindfulness, yoga, or regular exercise</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                    <!-- ANEMIA -->
+                    <div class="illness-card" id="card-anemia" data-name="anemia iron deficiency blood" data-tags="noncontagious chronic" data-letter="A">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">Anemia</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-noncontagious">Non-Contagious</span>
+                                <span class="tag tag-chronic">Chronic</span>
+                                <span class="severity-dot sev-mod"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>Anemia is a condition where the blood lacks enough healthy red blood cells to carry adequate oxygen to the body's tissues. The most common type is iron-deficiency anemia. It is chronic and non-contagious, ranging from mild to severe.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Common Symptoms</div>
+                                <ul class="card-list">
+                                    <li>Unexplained tiredness and low energy</li>
+                                    <li>Pale or yellowish skin, pale inner eyelids</li>
+                                    <li>Shortness of breath with light activity</li>
+                                    <li>Dizziness, cold hands and feet</li>
+                                    <li>Rapid or irregular heartbeat</li>
+                                    <li class="red-flag">Chest pain, severe shortness of breath, or fainting — seek emergency care</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Causes &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>Iron deficiency (most common): poor diet, blood loss (heavy periods, ulcers)</li>
+                                    <li>Vitamin B12 or folate deficiency: poor nutrition or absorption problems</li>
+                                    <li>Chronic diseases: kidney disease, cancer, rheumatoid arthritis</li>
+                                    <li>Women of childbearing age, pregnant women, and vegans at higher risk</li>
+                                    <li>Genetic: sickle cell disease and thalassaemia cause inherited anemia</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Management &amp; Treatment</div>
+                                <ul class="card-list">
+                                    <li>Iron supplements (ferrous sulfate); take with vitamin C to enhance absorption</li>
+                                    <li>Vitamin B12 injections or oral supplements for B12 deficiency</li>
+                                    <li>Eat iron-rich foods: red meat, legumes, spinach, fortified cereals</li>
+                                    <li>Treat underlying cause (e.g. manage heavy periods, treat ulcers)</li>
+                                    <li>Severe cases may require blood transfusion or erythropoietin injections</li>
+                                </ul>
+                                <div class="duration-badge">⏱ Weeks to months to resolve; chronic if underlying cause persists</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention</div>
+                                <ul class="card-list">
+                                    <li>Eat a varied, iron-rich diet with plenty of leafy greens and lean meat</li>
+                                    <li>Avoid tea/coffee with meals — they inhibit iron absorption</li>
+                                    <li>Regular blood tests if you have risk factors or heavy periods</li>
+                                    <li>Prenatal iron supplements for pregnant women</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                    <!-- HIGH CHOLESTEROL -->
+                    <div class="illness-card" id="card-cholesterol" data-name="high cholesterol hyperlipidemia lipid" data-tags="noncontagious chronic" data-letter="H">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">High Cholesterol</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-noncontagious">Non-Contagious</span>
+                                <span class="tag tag-chronic">Chronic</span>
+                                <span class="severity-dot sev-mod"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>High cholesterol (hyperlipidaemia) means there is too much LDL ("bad") cholesterol in the bloodstream, which can build up in artery walls and lead to heart attack or stroke. It is chronic, non-contagious, and typically has no symptoms — only a blood test can detect it.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Common Symptoms</div>
+                                <ul class="card-list">
+                                    <li>No symptoms in the vast majority of cases</li>
+                                    <li>Xanthomas (fatty deposits under skin around eyes or tendons) in severe cases</li>
+                                    <li class="red-flag">Chest pain or pressure — could indicate angina from narrowed arteries</li>
+                                    <li class="red-flag">Sudden arm weakness, facial drooping, speech problems — possible stroke emergency</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Causes &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>Diet high in saturated fats, trans fats, and processed foods</li>
+                                    <li>Physical inactivity and obesity</li>
+                                    <li>Familial hypercholesterolaemia: genetic condition causing very high LDL</li>
+                                    <li>Diabetes, hypothyroidism, and kidney disease can elevate cholesterol</li>
+                                    <li>Age (risk increases after 40), male sex, and smoking are additional risk factors</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Management &amp; Treatment</div>
+                                <ul class="card-list">
+                                    <li>Statins (e.g. atorvastatin, rosuvastatin) are the primary medication</li>
+                                    <li>Diet: reduce saturated fat, increase fibre (oats, beans), eat more omega-3 fish</li>
+                                    <li>Regular aerobic exercise raises HDL ("good") cholesterol</li>
+                                    <li>Quit smoking and limit alcohol consumption</li>
+                                    <li>Repeat lipid panel every 3–6 months when on treatment</li>
+                                </ul>
+                                <div class="duration-badge">⏱ Lifelong management; diet changes can show improvement in 3 months</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention</div>
+                                <ul class="card-list">
+                                    <li>Cholesterol screening from age 35 (or 20 if family history)</li>
+                                    <li>Replace saturated fats with unsaturated fats (olive oil, avocados, nuts)</li>
+                                    <li>Eat at least 30g of dietary fibre daily</li>
+                                    <li>Maintain a healthy body weight and exercise regularly</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                </div><!-- /illness-grid -->
+            </div><!-- /subcat Heart & Blood -->
+
+            <!-- Lungs & Breathing -->
+            <div class="subcat">
+                <div class="subcat-header">
+                    <span class="subcat-title">🫁 Lungs &amp; Breathing</span>
+                    <span class="subcat-count">3</span>
+                </div>
+                <div class="illness-grid">
+
+                    <!-- ASTHMA -->
+                    <div class="illness-card" id="card-asthma" data-name="asthma breathing wheeze lungs" data-tags="noncontagious chronic" data-letter="A">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">Asthma</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-noncontagious">Non-Contagious</span>
+                                <span class="tag tag-chronic">Chronic</span>
+                                <span class="severity-dot sev-mod"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>Asthma is a chronic inflammatory condition of the airways that causes recurring episodes of wheezing, breathlessness, chest tightness, and coughing. It is non-contagious and manageable but can be life-threatening if severe attacks go untreated.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Common Symptoms</div>
+                                <ul class="card-list">
+                                    <li>Wheezing (a whistling sound when breathing)</li>
+                                    <li>Shortness of breath, especially at night or early morning</li>
+                                    <li>Chest tightness or pressure</li>
+                                    <li>Persistent dry cough, worse at night</li>
+                                    <li class="red-flag">Severe breathlessness with no relief from inhaler — call emergency services</li>
+                                    <li class="red-flag">Blue lips or fingertips (cyanosis) — life-threatening; seek immediate help</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Causes &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>Allergic triggers: pollen, dust mites, pet dander, mould</li>
+                                    <li>Non-allergic triggers: cold air, exercise, smoke, strong odours</li>
+                                    <li>Family history of asthma or allergies (atopy)</li>
+                                    <li>Childhood respiratory infections and urban air pollution</li>
+                                    <li>Obesity increases asthma severity and frequency</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Management &amp; Treatment</div>
+                                <ul class="card-list">
+                                    <li>Reliever inhaler (SABA, e.g. salbutamol) for immediate symptom relief</li>
+                                    <li>Preventer inhaler (ICS, e.g. beclometasone) used daily to reduce inflammation</li>
+                                    <li>Identify and avoid personal triggers</li>
+                                    <li>Written Asthma Action Plan reviewed annually with a doctor</li>
+                                    <li>Spacer devices improve inhaler effectiveness, especially in children</li>
+                                </ul>
+                                <div class="duration-badge">⏱ Lifelong condition; well-controlled asthma allows near-normal life</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention</div>
+                                <ul class="card-list">
+                                    <li>Avoid smoking and second-hand smoke — the biggest modifiable trigger</li>
+                                    <li>Use allergen-proof mattress/pillow covers and wash bedding in hot water weekly</li>
+                                    <li>Annual flu vaccination to reduce respiratory illness risk</li>
+                                    <li>Keep indoor humidity below 50% to inhibit dust mites and mould</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                    <!-- PNEUMONIA -->
+                    <div class="illness-card" id="card-pneumonia" data-name="pneumonia lung infection breathing" data-tags="contagious acute urgent" data-letter="P">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">Pneumonia</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-contagious">Contagious</span>
+                                <span class="tag tag-acute">Acute</span>
+                                <span class="tag tag-urgent">Urgent</span>
+                                <span class="severity-dot sev-high"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>Pneumonia is an acute infection that inflames the air sacs (alveoli) in one or both lungs, often filling them with fluid or pus. It can be caused by bacteria, viruses, or fungi and ranges from mild ("walking pneumonia") to life-threatening, especially in the elderly or immunocompromised.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Common Symptoms</div>
+                                <ul class="card-list">
+                                    <li>Productive cough (green, yellow, or blood-tinged phlegm)</li>
+                                    <li>High fever with chills and sweating</li>
+                                    <li>Sharp or stabbing chest pain when breathing or coughing</li>
+                                    <li>Shortness of breath even at rest</li>
+                                    <li>Fatigue, loss of appetite, nausea</li>
+                                    <li class="red-flag">Rapid breathing (&gt;30 breaths/min), low blood pressure, confusion — emergency</li>
+                                    <li class="red-flag">Oxygen saturation below 94% — seek immediate hospital care</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Causes &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>Streptococcus pneumoniae (most common bacterial cause)</li>
+                                    <li>Viral: influenza, respiratory syncytial virus (RSV), SARS-CoV-2</li>
+                                    <li>Aspiration pneumonia from inhaling food or liquids</li>
+                                    <li>High-risk groups: elderly (&gt;65), infants, smokers, immunocompromised patients</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Management &amp; Treatment</div>
+                                <ul class="card-list">
+                                    <li>Bacterial pneumonia: antibiotics (amoxicillin; clarithromycin for atypicals)</li>
+                                    <li>Viral pneumonia: supportive care; antivirals if influenza-related</li>
+                                    <li>Rest, adequate hydration, and fever management with paracetamol</li>
+                                    <li>Hospitalisation with IV antibiotics and oxygen for moderate–severe cases</li>
+                                    <li>ICU and mechanical ventilation for critical presentations</li>
+                                </ul>
+                                <div class="duration-badge">⏱ 1–3 weeks for mild; 4–6 weeks for full recovery in older adults</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention</div>
+                                <ul class="card-list">
+                                    <li>Pneumococcal vaccine (PCV13, PPSV23) for adults over 65 and high-risk groups</li>
+                                    <li>Annual influenza vaccination</li>
+                                    <li>Good hand hygiene and avoiding close contact with sick individuals</li>
+                                    <li>Quit smoking to restore lung defence mechanisms</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                    <!-- COVID-19 -->
+                    <div class="illness-card" id="card-covid-19" data-name="covid-19 coronavirus sars pandemic respiratory" data-tags="contagious acute urgent" data-letter="C">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">COVID-19</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-contagious">Contagious</span>
+                                <span class="tag tag-acute">Acute</span>
+                                <span class="tag tag-urgent">Urgent</span>
+                                <span class="severity-dot sev-high"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>COVID-19 is an infectious respiratory illness caused by the SARS-CoV-2 coronavirus. It spreads primarily through respiratory droplets and aerosols. Severity ranges from asymptomatic to critical, and some people develop "long COVID" with symptoms lasting months after initial recovery.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Common Symptoms</div>
+                                <ul class="card-list">
+                                    <li>Fever, chills, and fatigue</li>
+                                    <li>Dry cough and sore throat</li>
+                                    <li>Loss of taste or smell (anosmia/ageusia)</li>
+                                    <li>Headache, muscle aches, runny nose</li>
+                                    <li>Nausea, vomiting, or diarrhoea in some cases</li>
+                                    <li class="red-flag">Difficulty breathing or shortness of breath — seek emergency care</li>
+                                    <li class="red-flag">Persistent chest pain, confusion, or inability to stay awake — call emergency services</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Causes &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>SARS-CoV-2 virus; transmitted via respiratory droplets and aerosols</li>
+                                    <li>Close contact with infected individuals in poorly ventilated spaces</li>
+                                    <li>High risk: elderly, immunocompromised, obesity, diabetes, heart disease</li>
+                                    <li>Unvaccinated individuals face higher risk of severe disease</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Management &amp; Treatment</div>
+                                <ul class="card-list">
+                                    <li>Mild: rest, hydration, paracetamol for fever and pain</li>
+                                    <li>Antiviral treatments (nirmatrelvir/ritonavir, remdesivir) for high-risk patients if given early</li>
+                                    <li>Supplemental oxygen for SpO₂ &lt;94%</li>
+                                    <li>Dexamethasone for hospitalised patients needing oxygen</li>
+                                    <li>Long COVID: multidisciplinary rehabilitation, paced activity, symptom management</li>
+                                </ul>
+                                <div class="duration-badge">⏱ Acute illness 1–2 weeks; long COVID symptoms can persist 3–12+ months</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention</div>
+                                <ul class="card-list">
+                                    <li>Stay up to date with recommended COVID-19 vaccinations and boosters</li>
+                                    <li>Wear a well-fitting mask in crowded indoor spaces during outbreaks</li>
+                                    <li>Improve ventilation indoors; use HEPA air filters where possible</li>
+                                    <li>Wash hands frequently; avoid touching eyes, nose, and mouth</li>
+                                    <li>Isolate when symptomatic to prevent spread to others</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                </div>
+            </div><!-- /subcat Lungs -->
+
+            <!-- Brain & Nervous System -->
+            <div class="subcat">
+                <div class="subcat-header">
+                    <span class="subcat-title">🧠 Brain &amp; Nervous System</span>
+                    <span class="subcat-count">2</span>
+                </div>
+                <div class="illness-grid">
+
+                    <!-- STROKE -->
+                    <div class="illness-card" id="card-stroke" data-name="stroke brain blood clot cerebrovascular" data-tags="noncontagious acute urgent" data-letter="S">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">Stroke</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-noncontagious">Non-Contagious</span>
+                                <span class="tag tag-acute">Acute</span>
+                                <span class="tag tag-urgent">Urgent</span>
+                                <span class="severity-dot sev-critical"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>A stroke occurs when blood supply to part of the brain is cut off — either by a blockage (ischaemic stroke, 87% of cases) or a burst blood vessel (haemorrhagic stroke). Every minute without treatment, approximately 1.9 million brain cells die. Stroke is a medical emergency — remember FAST.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">⚡ FAST Warning Signs</div>
+                                <ul class="card-list">
+                                    <li class="red-flag">Face drooping — one side of the face droops or is numb; smile is uneven</li>
+                                    <li class="red-flag">Arm weakness — one arm is weak or numb; cannot raise both arms equally</li>
+                                    <li class="red-flag">Speech difficulty — slurred, strange, or unable to speak or understand</li>
+                                    <li class="red-flag">Time to call emergency services — immediately, do NOT wait</li>
+                                    <li>Sudden severe headache with no known cause</li>
+                                    <li>Sudden vision loss in one or both eyes</li>
+                                    <li>Sudden difficulty walking, loss of balance or coordination</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Causes &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>Ischaemic: blood clot in a brain artery (often from atrial fibrillation or atherosclerosis)</li>
+                                    <li>Haemorrhagic: ruptured artery, often due to uncontrolled hypertension</li>
+                                    <li>Modifiable risks: hypertension, smoking, diabetes, high cholesterol, atrial fibrillation</li>
+                                    <li>Non-modifiable: age over 55, male sex, family history, prior stroke or TIA</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Management &amp; Treatment</div>
+                                <ul class="card-list">
+                                    <li>Ischaemic stroke: IV thrombolysis (tPA) within 4.5 hours of symptom onset</li>
+                                    <li>Mechanical thrombectomy for large vessel occlusion within 24 hours</li>
+                                    <li>Haemorrhagic: control blood pressure, reverse anticoagulation, possible surgery</li>
+                                    <li>Stroke unit care significantly improves outcomes over general ward care</li>
+                                    <li>Rehabilitation: physiotherapy, speech therapy, occupational therapy after stabilisation</li>
+                                </ul>
+                                <div class="duration-badge">⏱ Recovery: weeks to years; depends on stroke severity and speed of treatment</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention</div>
+                                <ul class="card-list">
+                                    <li>Control blood pressure — the single most important preventable risk factor</li>
+                                    <li>Anticoagulants (e.g. warfarin, apixaban) for atrial fibrillation patients</li>
+                                    <li>Quit smoking; avoid excessive alcohol</li>
+                                    <li>Manage diabetes and cholesterol with lifestyle and medication</li>
+                                    <li>Aspirin for secondary prevention after TIA or ischaemic stroke</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                    <!-- DEPRESSION -->
+                    <div class="illness-card" id="card-depression" data-name="depression mental health mood sadness" data-tags="noncontagious chronic" data-letter="D">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">Depression</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-noncontagious">Non-Contagious</span>
+                                <span class="tag tag-chronic">Chronic</span>
+                                <span class="severity-dot sev-mod"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>Depression (major depressive disorder) is a serious mental health condition characterised by persistent feelings of sadness, hopelessness, and loss of interest. It affects how a person thinks, feels, and functions daily, and is one of the leading causes of disability worldwide.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Common Symptoms</div>
+                                <ul class="card-list">
+                                    <li>Persistent sadness, emptiness, or hopelessness lasting &gt;2 weeks</li>
+                                    <li>Loss of interest in previously enjoyable activities (anhedonia)</li>
+                                    <li>Significant changes in appetite and weight</li>
+                                    <li>Insomnia or hypersomnia (sleeping too much)</li>
+                                    <li>Difficulty concentrating, making decisions, or remembering things</li>
+                                    <li>Fatigue and loss of energy</li>
+                                    <li class="red-flag">Thoughts of death, self-harm, or suicide — seek help immediately (call a crisis line)</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Causes &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>Imbalance of neurotransmitters (serotonin, dopamine, norepinephrine)</li>
+                                    <li>Genetic predisposition; first-degree relatives with depression increases risk</li>
+                                    <li>Stressful life events: trauma, bereavement, relationship breakdown, financial stress</li>
+                                    <li>Chronic physical illness (e.g. cancer, diabetes, heart disease) increases risk</li>
+                                    <li>Substance abuse, social isolation, and hormonal changes (postpartum, menopause)</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Management &amp; Treatment</div>
+                                <ul class="card-list">
+                                    <li>Psychotherapy: CBT (Cognitive Behavioural Therapy) is first-line for mild-moderate depression</li>
+                                    <li>Antidepressants: SSRIs (e.g. sertraline, fluoxetine) for moderate-severe depression</li>
+                                    <li>Combined therapy (medication + psychotherapy) most effective for severe cases</li>
+                                    <li>Regular exercise (150 min/week) has evidence comparable to antidepressants for mild-moderate</li>
+                                    <li>ECT (electroconvulsive therapy) for treatment-resistant severe depression</li>
+                                </ul>
+                                <div class="duration-badge">⏱ 6–12 months of treatment typical; some may need indefinite maintenance</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention &amp; Support</div>
+                                <ul class="card-list">
+                                    <li>Maintain strong social connections and a regular daily routine</li>
+                                    <li>Prioritise sleep hygiene and limit alcohol use</li>
+                                    <li>Early psychological intervention after trauma or bereavement</li>
+                                    <li>Mind-body practices: yoga, mindfulness, journalling</li>
+                                    <li>Seek help early — depression is highly treatable when caught early</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment. If you are in crisis, please contact your local emergency services or a mental health helpline immediately.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                </div>
+            </div><!-- /subcat Brain -->
+
+            <!-- Joints & Bones -->
+            <div class="subcat">
+                <div class="subcat-header">
+                    <span class="subcat-title">🦴 Joints &amp; Bones</span>
+                    <span class="subcat-count">1</span>
+                </div>
+                <div class="illness-grid">
+
+                    <!-- ARTHRITIS -->
+                    <div class="illness-card" id="card-arthritis" data-name="arthritis joint pain osteoarthritis rheumatoid" data-tags="noncontagious chronic" data-letter="A">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">Arthritis</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-noncontagious">Non-Contagious</span>
+                                <span class="tag tag-chronic">Chronic</span>
+                                <span class="severity-dot sev-mod"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>Arthritis is inflammation of one or more joints, causing pain, stiffness, and reduced range of motion. The two most common types are osteoarthritis (wear-and-tear) and rheumatoid arthritis (autoimmune). Over 350 million people worldwide live with arthritis.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Common Symptoms</div>
+                                <ul class="card-list">
+                                    <li>Joint pain, tenderness, and warmth</li>
+                                    <li>Morning stiffness lasting &gt;30 minutes (especially in rheumatoid arthritis)</li>
+                                    <li>Swelling and reduced range of motion in affected joints</li>
+                                    <li>Fatigue and general malaise (rheumatoid arthritis)</li>
+                                    <li>Joint deformity in advanced or untreated disease</li>
+                                    <li class="red-flag">Sudden hot, swollen joint with fever — could be septic arthritis, a medical emergency</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Causes &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>Osteoarthritis: cartilage breakdown from age, obesity, joint injury, and overuse</li>
+                                    <li>Rheumatoid arthritis: autoimmune attack on synovial membrane; genetic and environmental triggers</li>
+                                    <li>Gout: uric acid crystal deposition in joints, linked to diet and kidney function</li>
+                                    <li>Risk factors: age, female sex (RA), obesity, previous joint injury, family history</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Management &amp; Treatment</div>
+                                <ul class="card-list">
+                                    <li>NSAIDs (ibuprofen, naproxen) for pain and inflammation</li>
+                                    <li>DMARDs (methotrexate, hydroxychloroquine) to slow rheumatoid arthritis progression</li>
+                                    <li>Physiotherapy and occupational therapy to maintain function</li>
+                                    <li>Weight loss reduces load on weight-bearing joints significantly</li>
+                                    <li>Joint replacement surgery for severe osteoarthritis not responsive to treatment</li>
+                                </ul>
+                                <div class="duration-badge">⏱ Lifelong condition; flares managed with medication and lifestyle</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention</div>
+                                <ul class="card-list">
+                                    <li>Maintain a healthy weight to reduce joint load</li>
+                                    <li>Low-impact exercise (swimming, cycling) strengthens muscles protecting joints</li>
+                                    <li>Avoid repetitive high-impact joint stress and protect joints from injury</li>
+                                    <li>Anti-inflammatory diet rich in omega-3s, fruits, vegetables, and whole grains</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                </div>
+            </div><!-- /subcat Joints -->
+
+        </div><!-- /cat-block Body Parts -->
+
+        <!-- ======================================= -->
+        <!-- CATEGORY 2: METABOLIC & ENDOCRINE -->
+        <!-- ======================================= -->
+        <div class="cat-block">
+            <div class="cat-header">
+                <div class="cat-icon">🩺</div>
+                <div>
+                    <div class="cat-title">Metabolic &amp; Endocrine</div>
+                    <div class="cat-subtitle">Hormones, blood sugar, and metabolism</div>
+                </div>
+            </div>
+
+            <div class="subcat">
+                <div class="subcat-header">
+                    <span class="subcat-title">🍬 Blood Sugar &amp; Hormones</span>
+                    <span class="subcat-count">1</span>
+                </div>
+                <div class="illness-grid">
+
+                    <!-- DIABETES -->
+                    <div class="illness-card" id="card-diabetes" data-name="diabetes type 2 type 1 blood sugar insulin glucose" data-tags="noncontagious chronic" data-letter="D">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">Diabetes Mellitus</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-noncontagious">Non-Contagious</span>
+                                <span class="tag tag-chronic">Chronic</span>
+                                <span class="severity-dot sev-mod"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>Diabetes mellitus is a chronic metabolic disorder where the body either doesn't produce enough insulin (Type 1) or cannot effectively use insulin (Type 2), leading to persistently high blood glucose levels. Over 500 million people worldwide have diabetes, making it one of the most prevalent chronic diseases.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Common Symptoms</div>
+                                <ul class="card-list">
+                                    <li>Frequent urination (polyuria) and excessive thirst (polydipsia)</li>
+                                    <li>Unexplained weight loss (especially in Type 1)</li>
+                                    <li>Extreme fatigue, blurred vision</li>
+                                    <li>Slow-healing cuts and wounds</li>
+                                    <li>Tingling, numbness, or pain in hands or feet (neuropathy)</li>
+                                    <li>Recurrent infections (skin, urinary tract, gums)</li>
+                                    <li class="red-flag">DKA: vomiting, abdominal pain, fruity breath, rapid breathing — emergency in Type 1</li>
+                                    <li class="red-flag">Hyperosmolar state (HHS) in Type 2: extreme thirst, confusion — call emergency services</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Causes &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>Type 1: autoimmune destruction of insulin-producing beta cells (genetic + environmental)</li>
+                                    <li>Type 2: insulin resistance from obesity, inactivity, and genetics</li>
+                                    <li>Gestational diabetes: develops during pregnancy; increases future Type 2 risk</li>
+                                    <li>Risk factors for Type 2: overweight, sedentary lifestyle, family history, age &gt;45, prediabetes</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Management &amp; Treatment</div>
+                                <ul class="card-list">
+                                    <li>Type 1: lifelong insulin therapy (basal-bolus regimen); CGM and insulin pumps</li>
+                                    <li>Type 2: metformin first-line; GLP-1 agonists and SGLT-2 inhibitors increasingly preferred</li>
+                                    <li>Lifestyle: low-glycaemic diet, 150 min/week moderate exercise, weight management</li>
+                                    <li>Monitor HbA1c every 3 months; target &lt;7% (53 mmol/mol) for most adults</li>
+                                    <li>Foot examinations, eye checks (retinopathy), kidney function annually</li>
+                                </ul>
+                                <div class="duration-badge">⏱ Lifelong management; Type 2 can go into remission with weight loss</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention</div>
+                                <ul class="card-list">
+                                    <li>Type 2 is largely preventable: lose 5–7% body weight if overweight</li>
+                                    <li>150 min of moderate physical activity per week reduces risk by 58%</li>
+                                    <li>Replace refined carbohydrates with whole grains, vegetables, and legumes</li>
+                                    <li>Fasting blood glucose or HbA1c screening from age 35 if risk factors present</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                </div>
+            </div>
+        </div><!-- /cat-block Metabolic -->
+
+        <!-- ======================================= -->
+        <!-- CATEGORY 3: INFECTIOUS DISEASES -->
+        <!-- ======================================= -->
+        <div class="cat-block">
+            <div class="cat-header">
+                <div class="cat-icon">🦠</div>
+                <div>
+                    <div class="cat-title">Infectious Diseases</div>
+                    <div class="cat-subtitle">Bacterial, viral, parasitic &amp; fungal</div>
+                </div>
+            </div>
+
+            <div class="subcat">
+                <div class="subcat-header">
+                    <span class="subcat-title">🌡️ Parasitic &amp; Vector-Borne</span>
+                    <span class="subcat-count">1</span>
+                </div>
+                <div class="illness-grid">
+
+                    <!-- MALARIA -->
+                    <div class="illness-card" id="card-malaria" data-name="malaria plasmodium mosquito fever parasitic" data-tags="contagious acute urgent" data-letter="M">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">Malaria</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-contagious">Contagious</span>
+                                <span class="tag tag-acute">Acute</span>
+                                <span class="tag tag-urgent">Urgent</span>
+                                <span class="severity-dot sev-high"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>Malaria is a life-threatening parasitic disease transmitted to humans through the bites of infected female Anopheles mosquitoes. Caused by Plasmodium parasites (P. falciparum being the most deadly), malaria remains a major public health challenge in sub-Saharan Africa, South Asia, and Central America.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Common Symptoms</div>
+                                <ul class="card-list">
+                                    <li>Cyclical fevers (often every 48–72 hours), chills, and rigors</li>
+                                    <li>Severe headache, muscle aches, and joint pain</li>
+                                    <li>Nausea, vomiting, and diarrhoea</li>
+                                    <li>Sweating after fever peaks, followed by exhaustion</li>
+                                    <li>Anaemia (pallor, weakness) from red blood cell destruction</li>
+                                    <li class="red-flag">Cerebral malaria: confusion, seizures, loss of consciousness — life-threatening</li>
+                                    <li class="red-flag">Respiratory distress, severe anaemia, or hypoglycaemia — emergency hospitalisation</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Causes &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>Plasmodium falciparum (most severe), P. vivax, P. malariae, P. ovale</li>
+                                    <li>Transmitted via bite of infected female Anopheles mosquito (nocturnal feeder)</li>
+                                    <li>Travel to or residence in endemic tropical/subtropical regions</li>
+                                    <li>Children under 5 and pregnant women are at highest risk of severe disease</li>
+                                    <li>Lack of immunity in non-endemic travellers increases susceptibility</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Management &amp; Treatment</div>
+                                <ul class="card-list">
+                                    <li>Uncomplicated P. falciparum: artemisinin-based combination therapy (ACT) e.g. artemether-lumefantrine</li>
+                                    <li>Severe malaria: IV artesunate is drug of choice; ICU care if needed</li>
+                                    <li>P. vivax/ovale: chloroquine + primaquine (to eradicate liver stage)</li>
+                                    <li>Supportive care: antipyretics, IV fluids, blood transfusion for severe anaemia</li>
+                                    <li>Confirm diagnosis with rapid diagnostic test (RDT) or blood smear before treating</li>
+                                </ul>
+                                <div class="duration-badge">⏱ Uncomplicated: recovery in 1–2 weeks with treatment; relapsing forms may recur</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention</div>
+                                <ul class="card-list">
+                                    <li>Sleep under insecticide-treated bed nets (ITNs) — most effective single intervention</li>
+                                    <li>Indoor residual spraying (IRS) of walls with insecticides</li>
+                                    <li>Antimalarial prophylaxis for travellers (e.g. atovaquone-proguanil, doxycycline)</li>
+                                    <li>RTS,S/AS01 (Mosquirix) and R21/Matrix-M vaccines recommended for children in Africa</li>
+                                    <li>Eliminate standing water breeding sites; wear long sleeves and repellent at dusk</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="subcat">
+                <div class="subcat-header">
+                    <span class="subcat-title">🔴 Viral Infections</span>
+                    <span class="subcat-count">1</span>
+                </div>
+                <div class="illness-grid">
+
+                    <!-- HIV/AIDS -->
+                    <div class="illness-card" id="card-hiv-aids" data-name="hiv aids immune virus retrovirus" data-tags="contagious chronic" data-letter="H">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">HIV / AIDS</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-contagious">Contagious</span>
+                                <span class="tag tag-chronic">Chronic</span>
+                                <span class="severity-dot sev-high"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>HIV (Human Immunodeficiency Virus) attacks CD4+ T cells, progressively weakening the immune system. Without treatment, HIV advances to AIDS (Acquired Immunodeficiency Syndrome) — a stage defined by severe immune suppression and opportunistic infections. With modern antiretroviral therapy (ART), people with HIV can live long, healthy lives.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Stages &amp; Symptoms</div>
+                                <ul class="card-list">
+                                    <li>Acute (2–4 weeks after infection): flu-like illness, fever, sore throat, rash, swollen nodes</li>
+                                    <li>Chronic/Latent stage: often asymptomatic for years; virus still replicates and transmits</li>
+                                    <li>AIDS: CD4 count &lt;200 cells/µL; opportunistic infections (TB, PCP, CMV, Candida)</li>
+                                    <li>Weight loss, night sweats, chronic diarrhoea, and recurring infections</li>
+                                    <li class="red-flag">Severe opportunistic infection (e.g. TB meningitis, PCP pneumonia) — urgent hospital care needed</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Transmission &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>Unprotected sexual contact (anal, vaginal, oral — in order of risk)</li>
+                                    <li>Sharing needles or syringes (injecting drug use)</li>
+                                    <li>Mother-to-child transmission: pregnancy, childbirth, breastfeeding</li>
+                                    <li>Blood transfusions with unscreened blood (rare in countries with robust screening)</li>
+                                    <li>HIV is NOT transmitted by casual contact (hugging, sharing food, coughing, toilet seats)</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Management &amp; Treatment</div>
+                                <ul class="card-list">
+                                    <li>Antiretroviral therapy (ART): combination of 3 drugs from ≥2 drug classes (e.g. TLD — tenofovir/lamivudine/dolutegravir)</li>
+                                    <li>Goal: undetectable viral load (&lt;50 copies/mL) — Undetectable = Untransmittable (U=U)</li>
+                                    <li>ART should begin on day of diagnosis regardless of CD4 count</li>
+                                    <li>PrEP (pre-exposure prophylaxis) for HIV-negative people at high risk</li>
+                                    <li>PEP (post-exposure prophylaxis): within 72 hours of potential exposure</li>
+                                </ul>
+                                <div class="duration-badge">⏱ Lifelong ART; with treatment, near-normal life expectancy</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention</div>
+                                <ul class="card-list">
+                                    <li>Use condoms consistently and correctly</li>
+                                    <li>HIV testing — knowing your status is key; test regularly if at risk</li>
+                                    <li>PrEP for high-risk individuals (e.g. serodiscordant couples, MSM)</li>
+                                    <li>Harm reduction for people who inject drugs: needle exchanges, opioid substitution therapy</li>
+                                    <li>PMTCT (Prevention of Mother-to-Child Transmission) programmes for pregnant women</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                </div>
+            </div>
+        </div><!-- /cat-block Infectious -->
+
+        <!-- ======================================= -->
+        <!-- CATEGORY 4: BY URGENCY -->
+        <!-- ======================================= -->
+        <div class="cat-block">
+            <div class="cat-header">
+                <div class="cat-icon">🚨</div>
+                <div>
+                    <div class="cat-title">By Urgency Level</div>
+                    <div class="cat-subtitle">When to seek care, and how fast</div>
+                </div>
+            </div>
+
+            <div class="subcat">
+                <div class="subcat-header">
+                    <span class="subcat-title" style="color:#f87171">🔴 Immediate Emergency</span>
+                    <span class="subcat-count">1</span>
+                </div>
+                <div class="illness-grid">
+
+                    <!-- HEART ATTACK -->
+                    <div class="illness-card" id="card-heart-attack" data-name="heart attack myocardial infarction cardiac chest pain" data-tags="noncontagious acute urgent" data-letter="H">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">Heart Attack (MI)</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-noncontagious">Non-Contagious</span>
+                                <span class="tag tag-acute">Acute</span>
+                                <span class="tag tag-urgent">Urgent</span>
+                                <span class="severity-dot sev-critical"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>A heart attack (myocardial infarction) occurs when a coronary artery is blocked — usually by a blood clot — cutting off oxygen to heart muscle. Irreversible damage begins within minutes. Every second of delay increases permanent heart damage. Call emergency services immediately.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">⚡ Warning Signs — Act Immediately</div>
+                                <ul class="card-list">
+                                    <li class="red-flag">Crushing or squeezing chest pain or pressure, often spreading to left arm, jaw, neck, or back</li>
+                                    <li class="red-flag">Shortness of breath with or without chest discomfort</li>
+                                    <li class="red-flag">Cold sweat, nausea, light-headedness, or sudden fatigue</li>
+                                    <li>Women may experience atypical symptoms: jaw pain, nausea, back pain, fatigue without chest pain</li>
+                                    <li class="red-flag">Do NOT drive yourself — call emergency services (ambulance) immediately</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Causes &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>Coronary artery disease: plaque rupture triggers clot formation blocking blood flow</li>
+                                    <li>Major modifiable risks: smoking, hypertension, high cholesterol, diabetes, obesity</li>
+                                    <li>Non-modifiable: age, male sex (until menopause), family history of early heart disease</li>
+                                    <li>Psychological stress, cocaine use, and extreme physical exertion are triggers</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Emergency Treatment</div>
+                                <ul class="card-list">
+                                    <li>Chew 300mg aspirin immediately (if not allergic) while waiting for ambulance</li>
+                                    <li>STEMI: primary PCI (percutaneous coronary intervention / stent) within 90 min is gold standard</li>
+                                    <li>Thrombolysis ("clot-busting drugs") if PCI not available within 120 min</li>
+                                    <li>NSTEMI: risk-stratified; urgent PCI for high-risk, antithrombotic therapy for others</li>
+                                    <li>Post-MI: dual antiplatelet therapy, statins, ACE inhibitors, beta-blockers, cardiac rehab</li>
+                                </ul>
+                                <div class="duration-badge">⏱ "Time is muscle" — every 30-minute delay = greater permanent damage</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention</div>
+                                <ul class="card-list">
+                                    <li>Aggressively manage all cardiovascular risk factors (BP, cholesterol, glucose, weight)</li>
+                                    <li>Quit smoking immediately — risk halves within 1 year of cessation</li>
+                                    <li>Mediterranean or DASH diet reduces cardiovascular events</li>
+                                    <li>Know your 10-year cardiovascular risk score and act on it with your doctor</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. If you suspect a heart attack, call emergency services immediately — do not read this card instead of seeking help.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="subcat">
+                <div class="subcat-header">
+                    <span class="subcat-title" style="color:#fb923c">🟠 See a Doctor Within 24–48 Hours</span>
+                    <span class="subcat-count">1</span>
+                </div>
+                <div class="illness-grid">
+
+                    <!-- URINARY TRACT INFECTION -->
+                    <div class="illness-card" id="card-uti" data-name="urinary tract infection uti bladder cystitis" data-tags="contagious acute" data-letter="U">
+                        <div class="illness-card__header">
+                            <span class="illness-card__name">Urinary Tract Infection (UTI)</span>
+                            <div class="illness-tags">
+                                <span class="tag tag-contagious">Contagious</span>
+                                <span class="tag tag-acute">Acute</span>
+                                <span class="severity-dot sev-mod"></span>
+                            </div>
+                        </div>
+                        <div class="illness-card__body">
+                            <div class="card-summary"><p>A UTI is a bacterial infection in any part of the urinary system — kidneys, ureters, bladder, or urethra. Bladder infections (cystitis) are most common, especially in women. UTIs are highly treatable with antibiotics but can progress to serious kidney infection (pyelonephritis) if untreated.</p></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Common Symptoms</div>
+                                <ul class="card-list">
+                                    <li>Burning or painful sensation when urinating (dysuria)</li>
+                                    <li>Frequent urge to urinate with little output</li>
+                                    <li>Cloudy, dark, bloody, or strong-smelling urine</li>
+                                    <li>Pelvic pressure or lower abdominal discomfort</li>
+                                    <li>Confusion or agitation in elderly patients (atypical presentation)</li>
+                                    <li class="red-flag">High fever, back/flank pain, nausea, vomiting — suggests kidney infection (pyelonephritis)</li>
+                                    <li class="red-flag">UTI symptoms in men, children, or pregnant women always require prompt medical evaluation</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Causes &amp; Risk Factors</div>
+                                <ul class="card-list">
+                                    <li>E. coli causes ~80% of UTIs (from intestinal bacteria entering the urethra)</li>
+                                    <li>Women at higher risk: shorter urethra, proximity of anus to urethra</li>
+                                    <li>Sexual activity, use of spermicides, menopause, urinary catheters</li>
+                                    <li>Diabetes, kidney stones, and urinary tract abnormalities increase risk</li>
+                                </ul>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Management &amp; Treatment</div>
+                                <ul class="card-list">
+                                    <li>Uncomplicated cystitis: 3–5 day course of antibiotics (trimethoprim, nitrofurantoin, fosfomycin)</li>
+                                    <li>Pyelonephritis: 7–14 day antibiotics; IV antibiotics if hospitalised</li>
+                                    <li>Increase fluid intake to flush bacteria from urinary tract</li>
+                                    <li>Phenazopyridine for urinary pain relief (turns urine orange — normal)</li>
+                                    <li>Recurrent UTIs: consider low-dose prophylactic antibiotics or vaginal oestrogen (postmenopausal)</li>
+                                </ul>
+                                <div class="duration-badge">⏱ Symptoms typically improve within 24–48 hours of starting antibiotics</div>
+                            </div>
+                            <div class="card-divider"></div>
+                            <div class="card-section">
+                                <div class="card-section-title">Prevention</div>
+                                <ul class="card-list">
+                                    <li>Drink adequate fluids (at least 1.5L daily) to flush bacteria regularly</li>
+                                    <li>Wipe front to back after using the toilet</li>
+                                    <li>Urinate after sexual intercourse; avoid holding urine for long periods</li>
+                                    <li>Avoid spermicides and diaphragms if prone to recurrent UTIs</li>
+                                    <li>Cranberry products may slightly reduce recurrence risk</li>
+                                </ul>
+                            </div>
+                            <div class="card-disclaimer"><strong>⚕ Medical Disclaimer:</strong> This information is for educational purposes only and does not replace professional medical advice. Always consult a qualified doctor for diagnosis and treatment.</div>
+                        </div>
+                        <div class="illness-card__toggle"><span class="toggle-arrow">▼</span> <span class="toggle-label">Full Details</span></div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div><!-- /cat-block Urgency -->
+
+    </div><!-- /hub-body -->
+
+    <footer class="hub-footer">
+        ClinAssist AI · Medical Knowledge Hub · All information is for educational purposes only · Always consult a qualified healthcare professional · © 2025 ClinAssist
+    </footer>
+<script>
+(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="uZY8DsD3HD3yRrFmJVF0G";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
+</script>
+</div><!-- /page -->
+
+<script>
+    (function () {
+        /* ─── Card toggle ─── */
+        document.querySelectorAll('.illness-card').forEach(card => {
+            card.addEventListener('click', () => {
+                card.classList.toggle('open');
+            });
+        });
+
+        /* ─── A–Z index build ─── */
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        const presentLetters = new Set(
+            [...document.querySelectorAll('.illness-card')].map(c => c.dataset.letter)
+        );
+        const azRow = document.getElementById('azRow');
+        let activeAZ = null;
+
+        letters.forEach(l => {
+            const btn = document.createElement('button');
+            btn.className = 'az-btn' + (presentLetters.has(l) ? ' has-items' : '');
+            btn.textContent = l;
+            btn.dataset.letter = l;
+            btn.addEventListener('click', () => {
+                if (!presentLetters.has(l)) return;
+                if (activeAZ === l) {
+                    activeAZ = null;
+                    btn.classList.remove('active');
+                    applyFilters();
+                    return;
+                }
+                document.querySelectorAll('.az-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeAZ = l;
+                applyFilters();
+            });
+            azRow.appendChild(btn);
+        });
+
+        /* ─── Filter buttons ─── */
+        let activeFilter = 'all';
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeFilter = btn.dataset.filter;
+                activeAZ = null;
+                document.querySelectorAll('.az-btn').forEach(b => b.classList.remove('active'));
+                applyFilters();
+            });
+        });
+
+        /* ─── Search ─── */
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', () => {
+            activeFilter = 'all';
+            activeAZ = null;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-filter="all"]').classList.add('active');
+            document.querySelectorAll('.az-btn').forEach(b => b.classList.remove('active'));
+            applyFilters();
+        });
+
+        /* ─── Core filter logic ─── */
+        function applyFilters() {
+            const query = searchInput.value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.illness-card');
+            let visible = 0;
+
+            cards.forEach(card => {
+                const name  = card.dataset.name.toLowerCase();
+                const tags  = card.dataset.tags.toLowerCase();
+                const letter = card.dataset.letter;
+
+                const matchSearch = !query || name.includes(query);
+                const matchFilter = activeFilter === 'all' || tags.includes(activeFilter);
+                const matchAZ     = !activeAZ || letter === activeAZ;
+
+                if (matchSearch && matchFilter && matchAZ) {
+                    card.classList.remove('hidden');
+                    visible++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('noResults').classList.toggle('show', visible === 0);
+            document.getElementById('visibleCount').textContent = visible;
+
+            /* Show/hide subcat headers and cat blocks if all their cards are hidden */
+            document.querySelectorAll('.subcat').forEach(sub => {
+                const subCards = sub.querySelectorAll('.illness-card');
+                const anyVisible = [...subCards].some(c => !c.classList.contains('hidden'));
+                sub.style.display = anyVisible ? '' : 'none';
+            });
+            document.querySelectorAll('.cat-block').forEach(block => {
+                const subCats = block.querySelectorAll('.subcat');
+                const anyVisible = [...subCats].some(s => s.style.display !== 'none');
+                block.style.display = anyVisible ? '' : 'none';
+            });
+        }
+
+        /* ─── Top-10 scroll pills ─── */
+        document.querySelectorAll('[data-scroll]').forEach(pill => {
+            pill.addEventListener('click', e => {
+                e.preventDefault();
+                const id = 'card-' + pill.dataset.scroll;
+                const target = document.getElementById(id);
+                if (target) {
+                    // Clear filters, reveal card
+                    searchInput.value = '';
+                    activeFilter = 'all';
+                    activeAZ = null;
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelector('[data-filter="all"]').classList.add('active');
+                    document.querySelectorAll('.az-btn').forEach(b => b.classList.remove('active'));
+                    applyFilters();
+
+                    setTimeout(() => {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        target.classList.add('open');
+                    }, 80);
+                }
+            });
+        });
+
+        /* ─── Init counts ─── */
+        const total = document.querySelectorAll('.illness-card').length;
+        document.getElementById('totalCount').textContent = total;
+        document.getElementById('visibleCount').textContent = total;
+
+    })();
+</script>
+</body>
+</html>
