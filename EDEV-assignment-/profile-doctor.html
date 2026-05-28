@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Profile | ClinAssist AI — Doctor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0b1120;
+      --surface:     rgba(13,24,45,0.82);
+      --surface-2:   rgba(255,255,255,0.04);
+      --border:      rgba(255,255,255,0.07);
+      --border-2:    rgba(255,255,255,0.12);
+      --accent:      #38bdf8;
+      --accent-dim:  rgba(56,189,248,0.1);
+      --blue:        #1d4ed8;
+      --text:        #e2e8f0;
+      --text-muted:  rgba(241,245,249,0.45);
+      --text-faint:  rgba(241,245,249,0.22);
+      --success-bg:  rgba(34,197,94,0.12);
+      --success-b:   rgba(34,197,94,0.28);
+      --success-t:   #86efac;
+      --warn-bg:     rgba(239,68,68,0.1);
+      --warn-b:      rgba(239,68,68,0.25);
+      --warn-t:      #fca5a5;
+      --amber-bg:    rgba(234,179,8,0.1);
+      --amber-b:     rgba(234,179,8,0.25);
+      --amber-t:     #fde047;
+      --gold:        #fbbf24;
+      --radius:      12px;
+      --radius-lg:   16px;
+    }
+
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.9rem 2.5rem;
+      background: rgba(13,24,45,0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .nav-brand { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #fff; text-decoration: none; }
+    .nav-brand span { color: var(--accent); }
+    .nav-center { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+    .nav-right { display: flex; align-items: center; gap: 0.65rem; }
+    .btn-nav {
+      padding: 0.4rem 0.9rem; border-radius: 8px; border: 1px solid var(--border-2);
+      background: var(--surface-2); color: var(--text); font-size: 0.78rem;
+      font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.18s;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;
+    }
+    .btn-nav:hover { background: rgba(255,255,255,0.09); }
+
+    .page-shell {
+      display: grid; grid-template-columns: 260px 1fr;
+      max-width: 1200px; margin: 2rem auto; padding: 0 2rem; gap: 1.75rem; align-items: start;
+    }
+
+    .sidebar { position: sticky; top: 80px; display: flex; flex-direction: column; gap: 0.35rem; }
+    .sidebar-group-label {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--text-faint);
+      padding: 0 0.75rem; margin: 0.75rem 0 0.25rem;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.65rem;
+      padding: 0.65rem 0.85rem; border-radius: 10px;
+      font-size: 0.84rem; font-weight: 500; color: var(--text-muted);
+      cursor: pointer; border: 1px solid transparent; transition: all 0.18s; user-select: none;
+    }
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .nav-item:hover { background: var(--surface-2); color: var(--text); border-color: var(--border); }
+    .nav-item.active { background: var(--accent-dim); color: var(--accent); border-color: rgba(56,189,248,0.22); }
+
+    /* Doctor Avatar Block — gold accent */
+    .avatar-block {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 1.75rem 1rem 1.5rem; text-align: center;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); margin-bottom: 0.5rem;
+      backdrop-filter: blur(10px);
+    }
+    .avatar-ring {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, #1e3a8a 0%, #0b1f3a 100%);
+      border: 2px solid rgba(251,191,36,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: #fff;
+      margin-bottom: 0.85rem; position: relative; cursor: pointer; transition: border-color 0.2s; overflow: hidden;
+    }
+    .avatar-ring:hover { border-color: var(--gold); }
+    .avatar-edit-overlay {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: rgba(0,0,0,0.5); opacity: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.2s; font-size: 0.7rem; color: #fff; font-family: 'DM Sans',sans-serif;
+    }
+    .avatar-ring:hover .avatar-edit-overlay { opacity: 1; }
+    .avatar-name { font-size: 0.92rem; font-weight: 600; color: #f1f5f9; margin-bottom: 0.25rem; }
+    .avatar-role {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--gold); padding: 0.18rem 0.6rem;
+      background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25); border-radius: 100px;
+    }
+    .avatar-spec { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; }
+    .avatar-joined { font-size: 0.72rem; color: var(--text-faint); margin-top: 0.2rem; }
+
+    /* Verified badge */
+    .verified-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.55rem;
+      padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.65rem; font-weight: 700;
+      background: var(--success-bg); color: var(--success-t); border: 1px solid var(--success-b);
+    }
+
+    .main-col { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+    .panel { display: none; }
+    .panel.active { display: flex; flex-direction: column; gap: 1.25rem; }
+
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1.75rem;
+      backdrop-filter: blur(10px);
+    }
+    .card-title {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--accent);
+      display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;
+    }
+    .card-title svg { width: 14px; height: 14px; }
+    .card-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .card-title-row .card-title { margin-bottom: 0; }
+    .divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-field { display: flex; flex-direction: column; gap: 0.35rem; }
+    .form-field.full { grid-column: 1 / -1; }
+    .field-label {
+      font-size: 0.69rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.09em; color: var(--text-muted);
+    }
+    .field-req { color: #f87171; margin-left: 2px; }
+    .field-hint { font-size: 0.72rem; color: var(--text-faint); margin-top: 0.2rem; }
+    .dash-input, .dash-select, .dash-textarea {
+      background: var(--surface-2); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; color: var(--text); font-size: 0.86rem;
+      font-family: 'DM Sans', sans-serif; padding: 0.68rem 0.9rem;
+      outline: none; transition: border-color 0.2s, background 0.2s; width: 100%;
+    }
+    .dash-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+    .dash-input:focus, .dash-select:focus, .dash-textarea:focus {
+      border-color: rgba(56,189,248,0.45); background: rgba(56,189,248,0.04);
+    }
+    .dash-input::placeholder, .dash-textarea::placeholder { color: var(--text-faint); }
+    .dash-select { appearance: none; cursor: pointer; }
+    .dash-select option { background: #0f172a; }
+    .dash-input:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .input-wrap { position: relative; }
+    .input-wrap .input-icon { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--text-muted); pointer-events: none; }
+    .input-wrap .dash-input { padding-left: 2.5rem; }
+
+    .btn-primary {
+      padding: 0.72rem 1.5rem; border-radius: 10px;
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      border: 1px solid rgba(56,189,248,0.22); color: #fff;
+      font-size: 0.86rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.18s; letter-spacing: 0.02em;
+    }
+    .btn-primary:hover { background: linear-gradient(135deg, #2563eb, #1d4ed8); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(29,78,216,0.3); }
+    .btn-secondary {
+      padding: 0.65rem 1.2rem; border-radius: 10px;
+      background: var(--surface-2); border: 1px solid var(--border-2);
+      color: rgba(241,245,249,0.7); font-size: 0.84rem; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.09); }
+    .btn-danger {
+      padding: 0.65rem 1.2rem; border-radius: 10px;
+      background: var(--warn-bg); border: 1px solid var(--warn-b);
+      color: var(--warn-t); font-size: 0.84rem; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.18); }
+    .btn-row { display: flex; gap: 0.65rem; margin-top: 1.25rem; flex-wrap: wrap; }
+
+    /* Avatar edit */
+    .avatar-edit-wrap {
+      display: flex; align-items: center; gap: 1.5rem;
+      padding: 1.25rem; background: var(--surface-2);
+      border: 1px solid var(--border); border-radius: 12px; margin-bottom: 1.5rem;
+    }
+    .avatar-preview {
+      width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, #1e3a8a, #0b1f3a);
+      border: 2px solid rgba(251,191,36,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700;
+      color: #fff; overflow: hidden;
+    }
+    .avatar-edit-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+    .avatar-edit-actions p { font-size: 0.78rem; color: var(--text-faint); margin-top: 0.35rem; }
+    .btn-upload-label {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.55rem 1rem; border-radius: 9px;
+      background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25);
+      color: var(--gold); font-size: 0.82rem; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.18s; font-weight: 500;
+    }
+    .btn-upload-label:hover { background: rgba(251,191,36,0.18); }
+    .btn-upload-label svg { width: 14px; height: 14px; }
+    #avatarUploadInput { display: none; }
+
+    /* Stats */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+    .stat-chip { padding: 1rem; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); text-align: center; }
+    .stat-num { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--accent); font-weight: 700; }
+    .stat-lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+    /* License Status */
+    .license-status {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.9rem 1rem; border-radius: 10px;
+      background: var(--success-bg); border: 1px solid var(--success-b);
+      margin-bottom: 1.5rem;
+    }
+    .license-status svg { width: 16px; height: 16px; color: var(--success-t); flex-shrink: 0; }
+    .license-status-text { font-size: 0.82rem; color: var(--success-t); font-weight: 600; }
+    .license-status-sub  { font-size: 0.73rem; color: rgba(134,239,172,0.6); margin-top: 0.1rem; }
+    .license-expiry-warn {
+      background: var(--amber-bg); border-color: var(--amber-b);
+    }
+    .license-expiry-warn svg, .license-expiry-warn .license-status-text { color: var(--amber-t); }
+    .license-expiry-warn .license-status-sub { color: rgba(253,224,71,0.6); }
+
+    /* Document upload */
+    .doc-upload-zone {
+      border: 2px dashed rgba(56,189,248,0.2); border-radius: 12px;
+      padding: 1.5rem; text-align: center; cursor: pointer;
+      transition: all 0.2s; background: rgba(56,189,248,0.02); margin-bottom: 1.25rem;
+    }
+    .doc-upload-zone:hover { border-color: rgba(56,189,248,0.45); background: rgba(56,189,248,0.05); }
+    .doc-upload-zone svg { width: 32px; height: 32px; color: var(--accent); opacity: 0.6; margin-bottom: 0.5rem; }
+    .doc-upload-zone p { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .doc-upload-zone small { font-size: 0.72rem; color: var(--text-faint); }
+    #docUploadInput { display: none; }
+
+    .doc-filters { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
+    .doc-filter-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; white-space: nowrap; }
+
+    .doc-card {
+      display: flex; align-items: center; gap: 0.9rem;
+      padding: 0.85rem 1rem; border: 1px solid var(--border);
+      border-radius: 10px; background: var(--surface-2);
+      margin-bottom: 0.55rem; transition: border-color 0.18s;
+    }
+    .doc-card:hover { border-color: rgba(56,189,248,0.25); }
+    .doc-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .doc-info { flex: 1; min-width: 0; }
+    .doc-name { font-size: 0.86rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .doc-meta { font-size: 0.73rem; color: var(--text-muted); margin-top: 0.15rem; }
+    .doc-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+    .doc-btn {
+      width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--border);
+      background: var(--surface-2); cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: all 0.18s;
+    }
+    .doc-btn svg { width: 13px; height: 13px; }
+    .doc-btn-dl { color: var(--accent); }
+    .doc-btn-dl:hover { background: var(--accent-dim); border-color: rgba(56,189,248,0.3); }
+    .doc-btn-del { color: var(--warn-t); }
+    .doc-btn-del:hover { background: var(--warn-bg); border-color: var(--warn-b); }
+    .empty-docs { text-align: center; padding: 2rem 1rem; font-size: 0.83rem; color: var(--text-faint); line-height: 1.6; }
+
+    /* Toggles */
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.9rem 0; border-bottom: 1px solid var(--border);
+    }
+    .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .toggle-info .toggle-label { font-size: 0.88rem; font-weight: 500; color: var(--text); margin-bottom: 0.15rem; }
+    .toggle-info .toggle-sub   { font-size: 0.76rem; color: var(--text-muted); }
+    .toggle-switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; cursor: pointer; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-track { position: absolute; inset: 0; border-radius: 26px; background: rgba(255,255,255,0.1); transition: background 0.25s; }
+    .toggle-switch input:checked + .toggle-track { background: #1d4ed8; }
+    .toggle-thumb { position: absolute; width: 20px; height: 20px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: transform 0.25s; pointer-events: none; }
+    .toggle-switch input:checked ~ .toggle-thumb { transform: translateX(20px); }
+
+    /* Password */
+    .pw-wrap { position: relative; }
+    .pw-wrap .dash-input { padding-right: 2.75rem; }
+    .pw-eye {
+      position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--text-muted);
+      padding: 0; display: flex; align-items: center; transition: color 0.2s;
+    }
+    .pw-eye:hover { color: var(--accent); }
+    .pw-eye svg { width: 15px; height: 15px; }
+    .strength-bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.1); margin-top: 0.5rem; overflow: hidden; }
+    .strength-fill { height: 100%; border-radius: 2px; transition: width 0.3s, background 0.3s; width: 0%; }
+    .strength-text { font-size: 0.72rem; color: var(--text-faint); margin-top: 0.3rem; }
+
+    /* Session */
+    .session-card {
+      display: flex; align-items: center; gap: 1rem; padding: 0.85rem 1rem;
+      border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); margin-bottom: 0.6rem;
+    }
+    .session-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.15);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .session-icon svg { width: 16px; height: 16px; color: var(--accent); }
+    .session-device { font-size: 0.86rem; font-weight: 600; color: var(--text); }
+    .session-meta   { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem; }
+    .session-badge {
+      margin-left: auto; font-size: 0.62rem; font-weight: 700; padding: 0.2rem 0.55rem;
+      border-radius: 6px; text-transform: uppercase; letter-spacing: 0.06em;
+      background: var(--success-bg); color: var(--success-t); flex-shrink: 0;
+    }
+
+    /* Danger row */
+    .danger-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem; border: 1px solid var(--border); border-radius: 10px;
+      background: var(--surface-2); margin-bottom: 0.6rem;
+    }
+    .danger-info .danger-label { font-size: 0.86rem; font-weight: 600; color: var(--text); margin-bottom: 0.15rem; }
+    .danger-info .danger-sub   { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* Availability grid */
+    .avail-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.4rem; margin-bottom: 1rem; }
+    .avail-day {
+      padding: 0.5rem 0.25rem; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface-2); text-align: center; font-size: 0.72rem;
+      color: var(--text-muted); cursor: pointer; transition: all 0.18s;
+    }
+    .avail-day.on { background: var(--accent-dim); border-color: rgba(56,189,248,0.4); color: var(--accent); font-weight: 600; }
+    .avail-day:hover { border-color: rgba(56,189,248,0.3); }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 1.75rem; right: 1.75rem; z-index: 999;
+      padding: 0.8rem 1.25rem; border-radius: 12px; font-size: 0.83rem;
+      font-weight: 500; display: flex; align-items: center; gap: 0.6rem;
+      opacity: 0; transform: translateY(8px);
+      transition: all 0.3s cubic-bezier(0.22,1,0.36,1); pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: rgba(17,45,30,0.95); border: 1px solid var(--success-b); color: var(--success-t); }
+    .toast.error   { background: rgba(45,17,17,0.95); border: 1px solid var(--warn-b);    color: var(--warn-t);    }
+    .toast.info    { background: rgba(13,24,45,0.95); border: 1px solid rgba(56,189,248,0.3); color: var(--accent); }
+
+    .section-sub { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.6; }
+    .hidden { display: none !important; }
+
+    @media (max-width: 920px) {
+      .page-shell { grid-template-columns: 1fr; }
+      .sidebar { position: static; flex-direction: row; flex-wrap: wrap; gap: 0.3rem; }
+      .sidebar-group-label { display: none; }
+      .avatar-block { flex-direction: row; text-align: left; gap: 1rem; padding: 1rem 1.25rem; }
+      .avatar-ring { margin-bottom: 0; flex-shrink: 0; }
+      nav { padding: 0.75rem 1rem; }
+      .page-shell { padding: 0 1rem; margin: 1rem auto; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 540px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .avail-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-brand">Clin<span>Assist</span> AI</a>
+  <span class="nav-center">Doctor Profile &amp; Settings</span>
+  <div class="nav-right">
+    <a href="doctor-dashboard.html" class="btn-nav">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Dashboard
+    </a>
+    <button class="btn-nav" onclick="doctorSignOut()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="page-shell">
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="avatar-block">
+      <div class="avatar-ring" id="avatarCircle">
+        <span>Dr</span>
+        <div class="avatar-edit-overlay">✎ Edit</div>
+      </div>
+      <div>
+        <div class="avatar-name" id="avatarName">—</div>
+        <div class="avatar-role">Doctor</div>
+        <div class="avatar-spec" id="avatarSpec">General Practitioner</div>
+        <div class="avatar-joined" id="avatarJoined"></div>
+        <div class="verified-badge">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Verified Practitioner
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-group-label">My Profile</div>
+      <div class="nav-item active" data-panel="profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Personal Info
+      </div>
+      <div class="nav-item" data-panel="professional">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        Professional Details
+      </div>
+      <div class="nav-item" data-panel="practice">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Practice Info
+      </div>
+      <div class="nav-item" data-panel="documents">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Credentials &amp; Docs
+      </div>
+      <div class="sidebar-group-label">Settings</div>
+      <div class="nav-item" data-panel="security">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Security
+      </div>
+      <div class="nav-item" data-panel="notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Notifications
+      </div>
+      <div class="sidebar-group-label">Account</div>
+      <div class="nav-item" data-panel="account">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M20 12h-2M17.66 17.66l-1.41-1.41M12 20v-2M6.34 17.66l1.41-1.41M4 12h2M6.34 6.34L7.75 7.75"/></svg>
+        Account
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-col">
+
+    <!-- ===== PERSONAL INFO ===== -->
+    <div class="panel active" id="panel-profile">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Profile Photo
+        </div>
+        <div class="avatar-edit-wrap">
+          <div class="avatar-preview" id="avatarPreview">Dr</div>
+          <div class="avatar-edit-actions">
+            <label class="btn-upload-label" for="avatarUploadInput">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload Photo
+            </label>
+            <input type="file" id="avatarUploadInput" accept="image/*"/>
+            <button class="btn-secondary" style="font-size:0.78rem;" onclick="doctorRemoveAvatar()">Remove Photo</button>
+            <p>JPG, PNG or GIF · Max 2 MB</p>
+          </div>
+        </div>
+
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Personal Information
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="field-label">Title</label>
+            <select class="dash-select" id="pTitle">
+              <option value="">—</option>
+              <option value="Dr.">Dr.</option>
+              <option value="Prof.">Prof.</option>
+              <option value="Mr.">Mr.</option>
+              <option value="Mrs.">Mrs.</option>
+              <option value="Ms.">Ms.</option>
+            </select>
+          </div>
+          <div class="form-field" style="grid-column:span 1;"><!-- spacer --></div>
+          <div class="form-field">
+            <label class="field-label">First Name <span class="field-req">*</span></label>
+            <input class="dash-input" id="pFirstName" type="text" placeholder="First name"/>
+          </div>
+          <div class="form-field">
+            <label class="field-label">Last Name</label>
+            <input class="dash-input" id="pLastName" type="text" placeholder="Last name"/>
+          </div>
+          <div class="form-field">
+            <label class="field-label">Email Address</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <input class="dash-input" id="pEmail" type="email" placeholder="professional@hospital.com"/>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="field-label">Phone Number</label>
+            <input class="dash-input" id="pPhone" type="tel" placeholder="+267 7X XXX XXXX"/>
+          </div>
+          <div class="form-field full">
+            <label class="field-label">Professional Bio</label>
+            <textarea class="dash-textarea" id="pBio" placeholder="Brief professional biography for patients…"></textarea>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="doctorSaveProfile()">Save Changes</button>
+          <button class="btn-secondary" onclick="doctorLoadProfile()">Discard</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Practice Overview
+        </div>
+        <div class="stats-row">
+          <div class="stat-chip">
+            <div class="stat-num" id="statPatients">0</div>
+            <div class="stat-lbl">Patients</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-num" id="statRx">0</div>
+            <div class="stat-lbl">Prescriptions</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-num" id="statSubs">0</div>
+            <div class="stat-lbl">Submissions</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-num" id="statDocs">0</div>
+            <div class="stat-lbl">Documents</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROFESSIONAL DETAILS ===== -->
+    <div class="panel" id="panel-professional">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Medical License
+        </div>
+
+        <div class="license-status" id="licenseStatusBox">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <div>
+            <div class="license-status-text">License Active</div>
+            <div class="license-status-sub" id="licenseStatusSub">Check expiry date below</div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="field-label">Specialization</label>
+            <select class="dash-select" id="pSpecialization">
+              <option value="">— Select —</option>
+              <option>General Practitioner</option>
+              <option>Internal Medicine</option>
+              <option>Paediatrics</option>
+              <option>Obstetrics &amp; Gynaecology</option>
+              <option>Surgery</option>
+              <option>Orthopaedics</option>
+              <option>Cardiology</option>
+              <option>Dermatology</option>
+              <option>Psychiatry</option>
+              <option>Radiology</option>
+              <option>Emergency Medicine</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="field-label">Years of Experience</label>
+            <input class="dash-input" id="pYearsExp" type="number" placeholder="e.g. 10" min="0" max="60"/>
+          </div>
+          <div class="form-field">
+            <label class="field-label">License Number</label>
+            <input class="dash-input" id="pLicenseNumber" type="text" placeholder="e.g. BW-MED-0012345"/>
+          </div>
+          <div class="form-field">
+            <label class="field-label">Issuing Body</label>
+            <select class="dash-select" id="pLicenseIssuer">
+              <option value="">— Select —</option>
+              <option>Botswana Health Professions Council</option>
+              <option>HPCSA (South Africa)</option>
+              <option>GMC (UK)</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="field-label">License Expiry Date</label>
+            <input class="dash-input" id="pLicenseExpiry" type="date" onchange="checkLicenseExpiry(this.value)"/>
+          </div>
+          <div class="form-field">
+            <label class="field-label">Languages Spoken</label>
+            <input class="dash-input" id="pLanguages" type="text" placeholder="e.g. English, Setswana"/>
+          </div>
+          <div class="form-field">
+            <label class="field-label">Consultation Fee (BWP)</label>
+            <input class="dash-input" id="pConsultFee" type="text" placeholder="e.g. 350"/>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="doctorSaveProfile()">Save Professional Info</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PRACTICE INFO ===== -->
+    <div class="panel" id="panel-practice">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Practice / Hospital Details
+        </div>
+        <div class="form-grid">
+          <div class="form-field full">
+            <label class="field-label">Hospital / Clinic Name</label>
+            <input class="dash-input" id="pHospitalName" type="text" placeholder="e.g. Princess Marina Hospital"/>
+          </div>
+          <div class="form-field">
+            <label class="field-label">City</label>
+            <input class="dash-input" id="pPracticeCity" type="text" placeholder="e.g. Gaborone"/>
+          </div>
+          <div class="form-field">
+            <label class="field-label">Country</label>
+            <select class="dash-select" id="pPracticeCountry">
+              <option value="Botswana">Botswana</option>
+              <option value="South Africa">South Africa</option>
+              <option value="Zimbabwe">Zimbabwe</option>
+              <option value="Namibia">Namibia</option>
+              <option value="Zambia">Zambia</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Availability
+        </div>
+        <p class="section-sub">Select your available consultation days.</p>
+        <div class="avail-grid" id="availGrid">
+          <div class="avail-day on" data-day="Mon">Mon</div>
+          <div class="avail-day on" data-day="Tue">Tue</div>
+          <div class="avail-day on" data-day="Wed">Wed</div>
+          <div class="avail-day on" data-day="Thu">Thu</div>
+          <div class="avail-day on" data-day="Fri">Fri</div>
+          <div class="avail-day" data-day="Sat">Sat</div>
+          <div class="avail-day" data-day="Sun">Sun</div>
+        </div>
+        <div class="form-grid" style="margin-top:1rem;">
+          <div class="form-field">
+            <label class="field-label">Consultation Hours</label>
+            <input class="dash-input" id="pAvailability" type="text" placeholder="e.g. 08:00 – 17:00"/>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="doctorSaveProfile()">Save Practice Info</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DOCUMENTS ===== -->
+    <div class="panel" id="panel-documents">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Upload Credential / Document
+        </div>
+        <p class="section-sub">Upload your medical license, certificates, CPD records, ID or any professional documents. Files are stored locally.</p>
+
+        <div class="doc-filters">
+          <span class="doc-filter-label">Category:</span>
+          <select class="dash-select" id="docCategory" style="width:auto;padding:0.45rem 0.75rem;font-size:0.82rem;">
+            <option value="Medical License">Medical License</option>
+            <option value="Degree / Certificate">Degree / Certificate</option>
+            <option value="CPD Record">CPD Record</option>
+            <option value="ID Document">ID Document</option>
+            <option value="Insurance">Professional Insurance</option>
+            <option value="General">General</option>
+          </select>
+        </div>
+
+        <label class="doc-upload-zone" for="docUploadInput">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p>Click to upload or drag &amp; drop files here</p>
+          <small>PDF, JPG, PNG, DOCX · Max 15 MB each · Multiple files allowed</small>
+        </label>
+        <input type="file" id="docUploadInput" multiple accept=".pdf,.jpg,.jpeg,.png,.docx,.doc"/>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+          My Documents
+        </div>
+        <div id="docsList"></div>
+      </div>
+    </div>
+
+    <!-- ===== SECURITY ===== -->
+    <div class="panel" id="panel-security">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Change Password
+        </div>
+        <div class="form-grid">
+          <div class="form-field full">
+            <label class="field-label">Current Password</label>
+            <div class="pw-wrap">
+              <input class="dash-input" id="secCurrent" type="password" placeholder="Current password"/>
+              <button class="pw-eye" type="button" onclick="togglePasswordEye('secCurrent', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="field-label">New Password</label>
+            <div class="pw-wrap">
+              <input class="dash-input" id="secNew" type="password" placeholder="New password"/>
+              <button class="pw-eye" type="button" onclick="togglePasswordEye('secNew', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+            <div class="strength-text" id="strengthText">Enter a new password</div>
+          </div>
+          <div class="form-field">
+            <label class="field-label">Confirm New Password</label>
+            <div class="pw-wrap">
+              <input class="dash-input" id="secConfirm" type="password" placeholder="Repeat new password"/>
+              <button class="pw-eye" type="button" onclick="togglePasswordEye('secConfirm', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="doctorChangePassword()">Update Password</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Active Sessions
+        </div>
+        <div class="session-card">
+          <div class="session-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div>
+            <div class="session-device" id="sessionDevice">This device</div>
+            <div class="session-meta">Active now</div>
+          </div>
+          <span class="session-badge">Current</span>
+        </div>
+        <div class="divider"></div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Login Alerts via Email</div>
+            <div class="toggle-sub">Get an email when a new device signs in.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleLoginAlerts" checked onchange="doctorSavePref('loginAlerts', this.checked)"/>
+            <div class="toggle-track"></div><div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Two-Factor Authentication</div>
+            <div class="toggle-sub">Use Google Authenticator or Authy for extra security.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle2FA" onchange="doctorSavePref('2fa', this.checked)"/>
+            <div class="toggle-track"></div><div class="toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== NOTIFICATIONS ===== -->
+    <div class="panel" id="panel-notifications">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Notification Preferences
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">New Patient Submissions</div>
+            <div class="toggle-sub">Alert when a patient submits symptoms for review.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="notifAppt" checked onchange="doctorSavePref('notifAppt', this.checked)"/>
+            <div class="toggle-track"></div><div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Appointment Requests</div>
+            <div class="toggle-sub">Email when a patient books or cancels an appointment.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="notifRx" checked onchange="doctorSavePref('notifRx', this.checked)"/>
+            <div class="toggle-track"></div><div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Patient Messages</div>
+            <div class="toggle-sub">Alert when a patient sends a direct message.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="notifMsg" checked onchange="doctorSavePref('notifMsg', this.checked)"/>
+            <div class="toggle-track"></div><div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Analytics &amp; Usage</div>
+            <div class="toggle-sub">Allow ClinAssist to use anonymised data to improve the AI model.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="privAnalytics" checked onchange="doctorSavePref('analytics', this.checked)"/>
+            <div class="toggle-track"></div><div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="profileToast('Notification preferences saved.','success')">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ACCOUNT ===== -->
+    <div class="panel" id="panel-account">
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Account Details
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="field-label">Account Type</label>
+            <input class="dash-input" id="accType" disabled/>
+          </div>
+          <div class="form-field">
+            <label class="field-label">Account ID</label>
+            <input class="dash-input" id="accId" disabled/>
+          </div>
+          <div class="form-field full">
+            <label class="field-label">Registered Email</label>
+            <input class="dash-input" id="accEmail" disabled/>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Your Data
+        </div>
+        <div class="danger-row">
+          <div class="danger-info">
+            <div class="danger-label">Download My Data</div>
+            <div class="danger-sub">Export all your profile, appointments, prescriptions as JSON.</div>
+          </div>
+          <button class="btn-secondary" onclick="doctorExportData()">⬇ Export</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="color:var(--warn-t);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Danger Zone
+        </div>
+        <div class="danger-row">
+          <div class="danger-info">
+            <div class="danger-label">Sign Out</div>
+            <div class="danger-sub">Log out of your current session.</div>
+          </div>
+          <button class="btn-secondary" onclick="doctorSignOut()">Sign Out</button>
+        </div>
+        <div class="danger-row" style="border-color:var(--warn-b);background:var(--warn-bg);">
+          <div class="danger-info">
+            <div class="danger-label" style="color:var(--warn-t)">Delete Account</div>
+            <div class="danger-sub">Permanently remove your account and all data. Cannot be undone.</div>
+          </div>
+          <button class="btn-danger" onclick="doctorConfirmDelete()">Delete</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script src="profile.js"></script>
+<script>
+  /* Availability day toggle */
+  document.querySelectorAll(".avail-day").forEach(btn => {
+    btn.addEventListener("click", function () {
+      this.classList.toggle("on");
+    });
+  });
+
+  /* License expiry check */
+  function checkLicenseExpiry(val) {
+    if (!val) return;
+    const box = document.getElementById("licenseStatusBox");
+    const sub = document.getElementById("licenseStatusSub");
+    if (!box) return;
+    const expiry = new Date(val);
+    const now    = new Date();
+    const days   = Math.round((expiry - now) / (1000 * 60 * 60 * 24));
+    if (days < 0) {
+      box.className = "license-status license-expiry-warn";
+      box.querySelector(".license-status-text").textContent = "License Expired";
+      if (sub) sub.textContent = "Please renew your license immediately.";
+    } else if (days < 90) {
+      box.className = "license-status license-expiry-warn";
+      box.querySelector(".license-status-text").textContent = "License Expiring Soon";
+      if (sub) sub.textContent = `Expires in ${days} day${days !== 1 ? "s" : ""}`;
+    } else {
+      box.className = "license-status";
+      box.querySelector(".license-status-text").textContent = "License Active";
+      if (sub) sub.textContent = `Valid for ${Math.floor(days / 30)} more months`;
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    doctorProfileInit();
+    // Trigger expiry check on load if value exists
+    const expiryEl = document.getElementById("pLicenseExpiry");
+    if (expiryEl && expiryEl.value) checkLicenseExpiry(expiryEl.value);
+  });
+</script>
+</body>
+</html>
